@@ -11,8 +11,8 @@ Live site: **https://bowergit.github.io/aftermind-roster/**
 
 | File | Purpose |
 |------|---------|
-| `index.html` | The whole app — plain HTML/CSS/vanilla JS, no build step, no framework. Fetches `members.json` at load. |
-| `members.json` | The member data. **This is the only file automation needs to touch.** |
+| `index.html` | The whole app — plain HTML/CSS/vanilla JS, no build step, no framework. Reads/writes a **Supabase** database via its REST API (plain `fetch`, no SDK). |
+| `members.json` | Seed data / export format. The live site no longer reads this at runtime, but `update-roster.py` operates on it and it's the schema reference + a backup. |
 | `update-roster.py` | Script that reads a Zoom transcript and merges newly-mentioned tools/topics into `members.json`. |
 | `sample-transcript.txt` | A fake transcript for testing the script. |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is. |
@@ -20,7 +20,8 @@ Live site: **https://bowergit.github.io/aftermind-roster/**
 
 ## How the data works
 
-Every member is one object in `members.json`:
+The roster data lives in a **Supabase** Postgres table called `members`. Each row is
+`{ id, data, updated_at }` where `data` is one member object:
 
 ```json
 {
@@ -28,6 +29,9 @@ Every member is one object in `members.json`:
   "role": "Magician and host, London",
   "blurb": "One-line description.",
   "website": "https://...",
+  "socials": {                    // any of: instagram, facebook, youtube, tiktok, x, linkedin
+    "instagram": "https://instagram.com/..."
+  },
   "crm": "Zoho CRM",              // a single CRM
   "usesVAs": false,               // tickbox: do they use virtual assistants
   "markets": ["Corporate"],       // any of: Corporate, Weddings, Private parties, Other
@@ -35,30 +39,56 @@ Every member is one object in `members.json`:
   "openToOneToOne": true,         // happy to take a 1:1 if a member has questions
   "tools": ["Claude", "17hats"],
   "topics": ["Marketing systems", "Lead scoring"],
-  "needsReview": false            // true = auto-added by the script, not yet verified
+  "needsReview": true             // true = auto-added/researched, not yet verified
 }
 ```
 
-The page reads this file with `fetch()` — so **automation can edit `members.json`
-directly without touching `index.html`.**
+`index.html` loads all rows on page load and writes edits straight back to the
+database, so **changes are shared — everyone sees them immediately.**
 
-## Editing from the page (proof of concept)
+## Editing from the page
 
-The site has no login and no backend. Anyone can:
+No login (proof of concept). Anyone with the page can:
 
 - **Search** by name, tool, topic, CRM, or market.
-- **Filter** with the tool / topic / market chips (selecting more than one narrows
-  the list — a member must match *all* selected chips).
-- **Edit** any member, or **Add yourself** via the questionnaire.
-- Follow each member's **website** link and see whether they're open to a **1:1**.
+- **Filter** with the tool / topic / market chips (selecting more than one narrows the
+  list — a member must match *all* selected chips).
+- **⚠ Needs review** button: show only profiles that were auto-researched and still
+  need a human to confirm them.
+- **Edit** any member, or **Add yourself** via the questionnaire. Saves persist to the
+  shared database.
+- **Refresh** re-pulls the latest data (e.g. after someone else edits).
+- **Export / Copy JSON** downloads the current roster as `members.json` (for the script
+  or a backup).
 
-> ⚠️ Edits and new entries are saved in **your browser's localStorage only** — they
-> do **not** sync to other people yet. To publish a change to the whole group, click
-> **Export members.json** (or **Copy JSON**), then commit the updated file to this repo.
-> **Reset to published** discards your local edits and reloads the committed data.
+> Deleting a profile is **not** possible from the page (no delete policy), to avoid
+> accidental/​malicious wipes. Remove a row from the Supabase dashboard if needed.
 
-Real multi-user editing would need a backend or a GitHub-API-backed form — that's a
-deliberate later step, not wired up yet.
+### Supabase setup (already done for this project)
+
+The table was created with this SQL (RLS on; public read + insert + update, no delete):
+
+```sql
+create table public.members (
+  id bigint generated always as identity primary key,
+  data jsonb not null,
+  updated_at timestamptz default now()
+);
+alter table public.members enable row level security;
+create policy "public read"   on public.members for select using (true);
+create policy "public insert" on public.members for insert with check (true);
+create policy "public update" on public.members for update using (true) with check (true);
+```
+
+The project URL and **publishable** (anon) key live at the top of `index.html` under
+`SUPABASE_URL` / `SUPABASE_KEY`. The publishable key is designed to be shipped in the
+browser — the **secret** `service_role` key must never go in this file. To re-seed the
+table from `members.json`, POST each member wrapped as `{ "data": <member> }` to
+`<URL>/rest/v1/members`.
+
+> **Security note:** because there's no login, anyone with the page can edit any
+> profile. That's the accepted proof-of-concept tradeoff. To tighten later: add a shared
+> edit passphrase, scope the update policy, or require auth.
 
 ---
 

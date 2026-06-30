@@ -294,8 +294,8 @@
     <h1>Who knows what</h1>
     <p class="lede">A searchable directory of the mastermind. Find who uses a given tool or can speak to a given topic, then go ask them.</p>
     <div class="notice">
-      <strong>Proof of concept.</strong> Edits and new entries you make here are saved <strong>in your browser only</strong> — they don't yet sync for everyone.
-      To publish changes to the group, use <em>Export members.json</em> and commit the file back to the repo.
+      <strong>Live shared roster.</strong> Edits and new members save to a shared database, so <strong>everyone sees them</strong>.
+      There's no login yet — please only edit your own profile. <em>Export</em> downloads the current roster as <code>members.json</code> for the automation script.
     </div>
   </header>
 
@@ -305,9 +305,10 @@
       <button class="btn solid" id="addBtn">+ Add yourself</button>
     </div>
     <div class="toolbar">
+      <button class="btn ghost" id="reviewBtn">⚠ Needs review</button>
+      <button class="btn ghost" id="resetBtn">Refresh</button>
       <button class="btn ghost" id="exportBtn">Export members.json</button>
       <button class="btn ghost" id="copyBtn">Copy JSON</button>
-      <button class="btn ghost" id="resetBtn">Reset to published</button>
     </div>
     <div class="chipgroups" id="chipgroups"></div>
   </div>
@@ -407,15 +408,17 @@
 "use strict";
 
 // ---- Config -------------------------------------------------------------
-var DATA_URL = "members.json";
-var STORAGE_KEY = "aftermind-roster-v1";
+// Supabase publishable (anon) key — safe to ship in the browser; access is
+// governed by Row Level Security policies on the `members` table.
+var SUPABASE_URL = "https://izgjdzwzokktuaqvcoak.supabase.co";
+var SUPABASE_KEY = "sb_publishable_UQySZ1gKOWBvp2MRShhzlQ_WxRRXbfO";
+var REST = SUPABASE_URL + "/rest/v1/members";
 var MARKETS = ["Corporate", "Weddings", "Private parties", "Other"];
 
 // ---- State --------------------------------------------------------------
-var published = [];      // baseline from members.json
-var members = [];        // working copy (possibly with local edits)
-var usingLocal = false;  // are we showing localStorage edits?
+var members = [];        // working copy, each with a hidden _id (DB row id)
 var activeChips = {};    // value -> true
+var reviewOnly = false;  // show only needs-review profiles
 var editIndex = null;    // index being edited, or null for "add"
 
 // ---- Helpers ------------------------------------------------------------
@@ -446,21 +449,33 @@ function normalizeMember(m) {
   };
 }
 
-function loadLocal() {
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    var parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed.map(normalizeMember);
-  } catch (e) {}
-  return null;
+// ---- Supabase data layer (plain fetch, no SDK) --------------------------
+function sbHeaders(extra) {
+  var h = { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY,
+            "Content-Type": "application/json" };
+  if (extra) for (var k in extra) h[k] = extra[k];
+  return h;
 }
-function saveLocal() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
-    usingLocal = true;
-    renderLocalFlag();
-  } catch (e) {}
+function sbCheck(r) {
+  if (r.ok) return r.json();
+  return r.text().then(function (t) { throw new Error("HTTP " + r.status + (t ? " " + t : "")); });
+}
+function rowToMember(row) { var m = normalizeMember(row.data); m._id = row.id; return m; }
+
+function sbLoad() {
+  return fetch(REST + "?select=id,data&order=id.asc", { headers: sbHeaders(), cache: "no-store" })
+    .then(sbCheck).then(function (rows) { return rows.map(rowToMember); });
+}
+function sbCreate(m) {
+  return fetch(REST, { method: "POST", headers: sbHeaders({ "Prefer": "return=representation" }),
+      body: JSON.stringify({ data: normalizeMember(m) }) })
+    .then(sbCheck).then(function (rows) { return rowToMember(rows[0]); });
+}
+function sbUpdate(m) {
+  return fetch(REST + "?id=eq." + encodeURIComponent(m._id),
+      { method: "PATCH", headers: sbHeaders({ "Prefer": "return=representation" }),
+        body: JSON.stringify({ data: normalizeMember(m), updated_at: new Date().toISOString() }) })
+    .then(sbCheck);
 }
 
 // ---- Filtering ----------------------------------------------------------
@@ -476,6 +491,7 @@ function getFiltered() {
   var q = $("#search").value.trim().toLowerCase();
   var active = Object.keys(activeChips).filter(function (k) { return activeChips[k]; });
   return members.filter(function (m) {
+    if (reviewOnly && !m.needsReview) return false;
     if (q && memberHaystack(m).indexOf(q) === -1) return false;
     if (active.length) {
       var vals = memberChipValues(m);
@@ -616,7 +632,7 @@ function renderCards() {
 }
 
 function renderLocalFlag() {
-  $("#localFlag").textContent = usingLocal ? "showing your local edits" : "showing published data";
+  $("#localFlag").textContent = "synced to shared database";
 }
 
 function render() {
@@ -646,7 +662,7 @@ function openEditor(idx) {
   $("#f-topics").value = m.topics.join(", ");
   var boxes = $("#f-markets").querySelectorAll("input[type=checkbox]");
   boxes.forEach(function (b) { b.checked = m.markets.indexOf(b.value) !== -1; });
-  $("#deleteBtn").style.display = editIndex == null ? "none" : "inline-block";
+  $("#deleteBtn").style.display = "none"; // deletion is admin-only (Supabase dashboard)
   $("#formErr").style.display = "none";
   $("#overlay").classList.add("open");
   $("#f-name").focus();
@@ -697,26 +713,36 @@ function submitForm(ev) {
     // preserve an existing review flag on edit; new self-adds are trusted
     needsReview: editIndex != null ? members[editIndex].needsReview : false
   });
-  if (editIndex == null) members.push(data);
-  else members[editIndex] = data;
-  saveLocal();
-  closeEditor();
-  render();
+  var idx = editIndex; // capture before async (closeEditor resets editIndex)
+  setSaving(true);
+  var op;
+  if (idx == null) {
+    op = sbCreate(data).then(function (created) { members.push(created); });
+  } else {
+    data._id = members[idx]._id;
+    op = sbUpdate(data).then(function () { members[idx] = data; });
+  }
+  op.then(function () {
+    setSaving(false);
+    closeEditor();
+    render();
+  }).catch(function (err) {
+    setSaving(false);
+    showFormErr("Save failed — not stored. " + err.message);
+  });
+}
+function setSaving(on) {
+  var b = $("#saveBtn");
+  b.disabled = on;
+  b.textContent = on ? "Saving…" : "Save";
 }
 function showFormErr(msg) { var e = $("#formErr"); e.textContent = msg; e.style.display = "block"; }
 
-function deleteMember() {
-  if (editIndex == null) return;
-  if (!confirm("Remove " + members[editIndex].name + " from your local copy?")) return;
-  members.splice(editIndex, 1);
-  saveLocal();
-  closeEditor();
-  render();
-}
-
-// ---- Export / reset -----------------------------------------------------
+// ---- Export / refresh ---------------------------------------------------
+// strip the hidden _id before exporting (keeps members.json clean for the script)
+function serializeMembers() { return JSON.stringify(members.map(normalizeMember), null, 2) + "\n"; }
 function exportJSON() {
-  var blob = new Blob([JSON.stringify(members, null, 2) + "\n"], { type: "application/json" });
+  var blob = new Blob([serializeMembers()], { type: "application/json" });
   var url = URL.createObjectURL(blob);
   var a = document.createElement("a");
   a.href = url; a.download = "members.json";
@@ -724,7 +750,7 @@ function exportJSON() {
   URL.revokeObjectURL(url);
 }
 function copyJSON() {
-  var text = JSON.stringify(members, null, 2) + "\n";
+  var text = serializeMembers();
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function () { flashBtn("#copyBtn", "Copied!"); });
   } else {
@@ -735,13 +761,10 @@ function flashBtn(sel, msg) {
   var b = $(sel); var old = b.textContent; b.textContent = msg;
   setTimeout(function () { b.textContent = old; }, 1400);
 }
-function resetToPublished() {
-  if (!confirm("Discard your local edits and reload the published roster?")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  members = published.map(normalizeMember);
-  usingLocal = false;
-  activeChips = {};
-  render();
+function refreshFromServer() {
+  $("#localFlag").textContent = "refreshing…";
+  return sbLoad().then(function (rows) { members = rows; render(); })
+    .catch(function (err) { $("#localFlag").textContent = "refresh failed: " + err.message; });
 }
 
 // ---- Boot ---------------------------------------------------------------
@@ -750,9 +773,13 @@ function wireUp() {
   $("#addBtn").addEventListener("click", function () { openEditor(null); });
   $("#exportBtn").addEventListener("click", exportJSON);
   $("#copyBtn").addEventListener("click", copyJSON);
-  $("#resetBtn").addEventListener("click", resetToPublished);
+  $("#resetBtn").addEventListener("click", refreshFromServer);
+  $("#reviewBtn").addEventListener("click", function () {
+    reviewOnly = !reviewOnly;
+    $("#reviewBtn").classList.toggle("solid", reviewOnly);
+    render();
+  });
   $("#cancelBtn").addEventListener("click", closeEditor);
-  $("#deleteBtn").addEventListener("click", deleteMember);
   $("#memberForm").addEventListener("submit", submitForm);
   $("#overlay").addEventListener("click", function (e) { if (e.target === $("#overlay")) closeEditor(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeEditor(); });
@@ -760,24 +787,17 @@ function wireUp() {
 
 function boot() {
   wireUp();
-  fetch(DATA_URL, { cache: "no-store" })
-    .then(function (r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    })
-    .then(function (data) {
-      published = data.map(normalizeMember);
-      var local = loadLocal();
-      if (local) { members = local; usingLocal = true; }
-      else { members = published.map(normalizeMember); usingLocal = false; }
+  sbLoad()
+    .then(function (rows) {
+      members = rows;
       render();
     })
     .catch(function (err) {
       $("#cards").innerHTML = "";
       var e = el("div", "empty-state");
-      e.innerHTML = "<span class='err'>Could not load members.json (" + err.message +
-        ").</span><br>If you opened this file directly, run it from a local server " +
-        "(e.g. <code>python -m http.server</code>) so fetch() can read the JSON.";
+      e.innerHTML = "<span class='err'>Could not load the roster from the database (" +
+        err.message + ").</span><br>Check the Supabase project URL/key and that the " +
+        "<code>members</code> table and its read policy exist.";
       $("#cards").appendChild(e);
     });
 }
