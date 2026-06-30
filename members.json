@@ -4,7 +4,9 @@
     "role": "Magician & host",
     "city": "London",
     "website": "https://www.bowermagic.co.uk/",
-    "socials": {},
+    "socials": {
+      "instagram": "https://www.instagram.com/bowermagic/"
+    },
     "crm": "",
     "usesVAs": false,
     "aiPowerhouse": false,
@@ -57,6 +59,7 @@
     "city": "San Francisco Bay Area",
     "website": "https://www.davidmartinezmagic.com/",
     "socials": {
+      "instagram": "https://www.instagram.com/davidmartinezmagic/",
       "facebook": "https://www.facebook.com/davidmartinezmagic/"
     },
     "crm": "",
@@ -73,7 +76,9 @@
     "role": "Mentalist",
     "city": "Irvine, CA",
     "website": "https://ocmentalist.com/",
-    "socials": {},
+    "socials": {
+      "instagram": "https://www.instagram.com/ocmentalist/"
+    },
     "crm": "",
     "usesVAs": false,
     "aiPowerhouse": false,
@@ -183,6 +188,7 @@
     "city": "New York, NY",
     "website": "https://www.mattszatmagic.com/",
     "socials": {
+      "instagram": "https://www.instagram.com/mattszatmagic/",
       "facebook": "https://www.facebook.com/MattSzatMagic/",
       "linkedin": "https://www.linkedin.com/in/mattszat/"
     },

@@ -147,7 +147,7 @@
     padding: 18px 18px 16px;
     box-shadow: var(--shadow);
   }
-  .card.review { border-left: 4px solid var(--maroon); }
+  .card.incomplete { border-left: 4px solid var(--maroon); }
   .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .card-name {
     font-family: "Fraunces", Georgia, serif;
@@ -156,7 +156,7 @@
     margin: 0;
   }
   .card-role { color: var(--maroon); font-size: 14px; font-weight: 500; margin: 2px 0 0; }
-  .review-flag {
+  .incomplete-flag {
     font-family: "Space Mono", monospace;
     font-size: 10.5px;
     text-transform: uppercase;
@@ -166,7 +166,10 @@
     padding: 3px 7px;
     border-radius: 4px;
     white-space: nowrap;
+    border: none;
+    cursor: pointer;
   }
+  .incomplete-flag:hover { background: var(--maroon-soft); }
   .blurb { margin: 10px 0 12px; color: var(--ink); }
 
   .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; }
@@ -316,7 +319,7 @@
       <button class="btn solid" id="addBtn">+ Add yourself</button>
     </div>
     <div class="toolbar">
-      <button class="btn ghost" id="reviewBtn">⚠ Needs review</button>
+      <button class="btn ghost" id="reviewBtn">Incomplete only</button>
       <button class="btn ghost" id="resetBtn">Refresh</button>
       <button class="btn ghost" id="exportBtn">Export members.json</button>
       <button class="btn ghost" id="copyBtn">Copy JSON</button>
@@ -386,7 +389,7 @@
         <div class="hint">Rough % of your gigs/turnover — should total 100%. Leave all blank to skip. <span id="splitTotal"></span></div>
       </div>
       <div class="field">
-        <label for="f-turnover">Annual turnover band (USD)</label>
+        <label for="f-turnover">Annual turnover band (USD) — optional</label>
         <select id="f-turnover">
           <option value="Undisclosed">Undisclosed</option>
           <option value="Under $50k">Under $50k</option>
@@ -434,10 +437,24 @@ var REST = SUPABASE_URL + "/rest/v1/members";
 var MARKETS = ["Corporate", "Weddings", "Private parties", "Other"];
 
 // ---- State --------------------------------------------------------------
-var members = [];        // working copy, each with a hidden _id (DB row id)
-var activeChips = {};    // value -> true
-var reviewOnly = false;  // show only needs-review profiles
-var editIndex = null;    // index being edited, or null for "add"
+var members = [];          // working copy, each with a hidden _id (DB row id)
+var activeChips = {};      // value -> true
+var incompleteOnly = false; // show only incomplete profiles
+var editIndex = null;      // index being edited, or null for "add"
+
+// A profile is "complete" once it has most of these filled in. Turnover is
+// intentionally NOT required — members can leave it blank.
+function profileMissing(m) {
+  var missing = [];
+  if (!m.city) missing.push("city");
+  if (!m.website) missing.push("website");
+  if (!(m.socials && m.socials.instagram)) missing.push("Instagram");
+  if (!m.crm) missing.push("CRM");
+  if (!Object.keys(m.marketSplit).length) missing.push("market split");
+  if (!m.tools.length) missing.push("tools");
+  return missing;
+}
+function isComplete(m) { return profileMissing(m).length <= 1; } // allow one gap
 
 // ---- Helpers ------------------------------------------------------------
 function $(sel) { return document.querySelector(sel); }
@@ -516,7 +533,7 @@ function getFiltered() {
   var q = $("#search").value.trim().toLowerCase();
   var active = Object.keys(activeChips).filter(function (k) { return activeChips[k]; });
   return members.filter(function (m) {
-    if (reviewOnly && !m.needsReview) return false;
+    if (incompleteOnly && isComplete(m)) return false;
     if (q && memberHaystack(m).indexOf(q) === -1) return false;
     if (active.length) {
       var vals = memberChipValues(m);
@@ -647,7 +664,9 @@ function renderCards() {
 
   list.forEach(function (m) {
     var idx = members.indexOf(m);
-    var card = el("div", "card" + (m.needsReview ? " review" : ""));
+    var missing = profileMissing(m);
+    var complete = missing.length <= 1;
+    var card = el("div", "card" + (complete ? "" : " incomplete"));
 
     var head = el("div", "card-head");
     var titleWrap = el("div");
@@ -655,7 +674,13 @@ function renderCards() {
     var sub = [m.role, m.city].filter(Boolean).join(" · ");
     if (sub) titleWrap.appendChild(el("p", "card-role", sub));
     head.appendChild(titleWrap);
-    if (m.needsReview) head.appendChild(el("span", "review-flag", "needs review"));
+    if (!complete) {
+      var flag = el("button", "incomplete-flag", "incomplete");
+      flag.type = "button";
+      flag.title = "Still needs: " + missing.join(", ") + " — click to edit";
+      flag.addEventListener("click", function () { openEditor(idx); });
+      head.appendChild(flag);
+    }
     card.appendChild(head);
 
     // meta line: CRM, turnover, VAs, AI, 1:1
@@ -867,8 +892,8 @@ function wireUp() {
   $("#copyBtn").addEventListener("click", copyJSON);
   $("#resetBtn").addEventListener("click", refreshFromServer);
   $("#reviewBtn").addEventListener("click", function () {
-    reviewOnly = !reviewOnly;
-    $("#reviewBtn").classList.toggle("solid", reviewOnly);
+    incompleteOnly = !incompleteOnly;
+    $("#reviewBtn").classList.toggle("solid", incompleteOnly);
     render();
   });
   $("#cancelBtn").addEventListener("click", closeEditor);

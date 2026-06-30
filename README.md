@@ -41,9 +41,14 @@ The roster data lives in a **Supabase** Postgres table called `members`. Each ro
   },
   "turnoverBand": "Undisclosed",  // USD band in $50k intervals, or "Undisclosed"
   "tools": ["Claude", "17hats"],
-  "needsReview": true             // true = auto-added/researched, not yet verified
+  "needsReview": true             // legacy flag kept on stored rows; the UI no longer uses it
 }
 ```
+
+Cards show an **"incomplete"** badge until a profile has most of its details filled in
+(city, website, Instagram, CRM, market split, tools — turnover is optional). Clicking
+the badge opens that member's edit form, and the **Incomplete only** button filters to
+profiles still missing details.
 
 Markets are one of: **Corporate, Weddings, Private parties, Other**. There are no
 `blurb` or `topics` fields — everyone in the group can speak to anything, and the
@@ -138,9 +143,9 @@ python update-roster.py <transcript.(txt|vtt)> [--members members.json] [--dry-r
   named one of the known **CRMs**, which one.
 - For a speaker **already in** `members.json`: merges new tools into their list with
   no duplicates, and sets their `crm` only if it's currently empty.
-- For a speaker **not yet in** `members.json`: adds a new entry (name + tools + CRM),
-  flagged `"needsReview": true` (shown with a *needs review* badge on the site) so you
-  can check it before trusting it.
+- For a speaker **not yet in** `members.json`: adds a new entry (name + tools + CRM).
+  New entries start with blank self-data, so they show as *incomplete* on the site
+  until reviewed/filled in.
 - Prints a short diff of exactly what changed.
 
 The detection is intentionally simple (keyword/dictionary based) so the script runs
