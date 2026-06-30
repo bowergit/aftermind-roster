@@ -1,7 +1,7 @@
 # The Aftermind Roster
 
 A searchable directory of **The Aftermind** mastermind group — who uses which tools
-and who can speak to which topics, so any member knows who to go to with a question.
+and CRMs and which markets they work, so any member knows who to go to with a question.
 
 Live site: **https://bowergit.github.io/aftermind-roster/**
 
@@ -13,7 +13,7 @@ Live site: **https://bowergit.github.io/aftermind-roster/**
 |------|---------|
 | `index.html` | The whole app — plain HTML/CSS/vanilla JS, no build step, no framework. Reads/writes a **Supabase** database via its REST API (plain `fetch`, no SDK). |
 | `members.json` | Seed data / export format. The live site no longer reads this at runtime, but `update-roster.py` operates on it and it's the schema reference + a backup. |
-| `update-roster.py` | Script that reads a Zoom transcript and merges newly-mentioned tools/topics into `members.json`. |
+| `update-roster.py` | Script that reads a Zoom transcript and merges newly-mentioned tools (and CRM) into `members.json`. |
 | `sample-transcript.txt` | A fake transcript for testing the script. |
 | `.nojekyll` | Tells GitHub Pages to serve files as-is. |
 | `.claude/launch.json` | Local dev-server config for previewing (optional). |
@@ -26,22 +26,29 @@ The roster data lives in a **Supabase** Postgres table called `members`. Each ro
 ```json
 {
   "name": "Daniel Bower",
-  "role": "Magician and host, London",
-  "blurb": "One-line description.",
+  "role": "Magician & host",
+  "city": "London",
   "website": "https://...",
   "socials": {                    // any of: instagram, facebook, youtube, tiktok, x, linkedin
     "instagram": "https://instagram.com/..."
   },
-  "crm": "Zoho CRM",              // a single CRM
+  "crm": "",                      // one of: 17Hats, Mago, HoneyBook, SpeakerFlow, GHL, or free text
   "usesVAs": false,               // tickbox: do they use virtual assistants
-  "markets": ["Corporate"],       // any of: Corporate, Weddings, Private parties, Other
+  "aiPowerhouse": false,          // tickbox: heavy AI user
+  "openToOneToOne": false,        // happy to take a 1:1 if a member has questions
+  "marketSplit": {                // % of gigs/turnover by market, totals 100 (or {} = unspecified)
+    "Corporate": 60, "Weddings": 40
+  },
   "turnoverBand": "Undisclosed",  // USD band in $50k intervals, or "Undisclosed"
-  "openToOneToOne": true,         // happy to take a 1:1 if a member has questions
   "tools": ["Claude", "17hats"],
-  "topics": ["Marketing systems", "Lead scoring"],
   "needsReview": true             // true = auto-added/researched, not yet verified
 }
 ```
+
+Markets are one of: **Corporate, Weddings, Private parties, Other**. There are no
+`blurb` or `topics` fields — everyone in the group can speak to anything, and the
+per-member self-data (CRM, turnover, VAs, AI, 1:1, market split, tools) starts blank
+for each person to fill in.
 
 `index.html` loads all rows on page load and writes edits straight back to the
 database, so **changes are shared — everyone sees them immediately.**
@@ -50,9 +57,10 @@ database, so **changes are shared — everyone sees them immediately.**
 
 No login (proof of concept). Anyone with the page can:
 
-- **Search** by name, tool, topic, CRM, or market.
-- **Filter** with the tool / topic / market chips (selecting more than one narrows the
-  list — a member must match *all* selected chips).
+- **Search** by name, city, tool, CRM, or market.
+- **Filter** with the tool / market chips (selecting more than one narrows the
+  list — a member must match *all* selected chips). Chips appear as members fill in
+  their tools and market split.
 - **⚠ Needs review** button: show only profiles that were auto-researched and still
   need a human to confirm them.
 - **Edit** any member, or **Add yourself** via the questionnaire. Saves persist to the
@@ -94,7 +102,7 @@ table from `members.json`, POST each member wrapped as `{ "data": <member> }` to
 
 ## Running the update script
 
-The script merges tools/topics found in a Zoom transcript into `members.json`.
+The script merges tools (and CRM) found in a Zoom transcript into `members.json`.
 It needs only Python 3 (3.8+) — no third-party packages, no API key, no network.
 
 It accepts a plain-text transcript (`Name: text` lines) **or** a Zoom `.vtt` file.
@@ -126,21 +134,20 @@ python update-roster.py <transcript.(txt|vtt)> [--members members.json] [--dry-r
 ### What it does
 
 - Splits the transcript into per-speaker utterances.
-- Detects which **tools** each speaker mentioned (any mention counts) and which
-  **topics** they spoke about with some depth (a topic needs at least two trigger
-  hits, so a passing mention won't qualify).
-- For a speaker **already in** `members.json`: merges new tools/topics into their
-  tags with no duplicates, and sets their `crm` only if it's currently empty.
-- For a speaker **not yet in** `members.json`: adds a new entry inferred from
-  context, flagged `"needsReview": true` (shown with a *needs review* badge on the
-  site) so you can check it before trusting it.
+- Detects which **tools** each speaker mentioned (any mention counts) and, if they
+  named one of the known **CRMs**, which one.
+- For a speaker **already in** `members.json`: merges new tools into their list with
+  no duplicates, and sets their `crm` only if it's currently empty.
+- For a speaker **not yet in** `members.json`: adds a new entry (name + tools + CRM),
+  flagged `"needsReview": true` (shown with a *needs review* badge on the site) so you
+  can check it before trusting it.
 - Prints a short diff of exactly what changed.
 
-The tool/topic detection is intentionally simple (keyword/dictionary based) so the
-script runs standing alone. It lives in one function, `extract_speaker_signals()`,
-so it can be swapped for an LLM-backed extractor later without changing the rest of
-the pipeline. Edit `TOOL_ALIASES` and `TOPIC_TRIGGERS` near the top of the script to
-teach it new tools or topics.
+The detection is intentionally simple (keyword/dictionary based) so the script runs
+standing alone. It lives in one function, `extract_speaker_signals()`, so it can be
+swapped for an LLM-backed extractor later without changing the rest of the pipeline.
+Edit `TOOL_ALIASES` and `CRM_ALIASES` near the top of the script to teach it new tools
+or CRMs.
 
 ### Not wired up yet (on purpose)
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Aftermind Roster</title>
-<meta name="description" content="A searchable directory of The Aftermind mastermind group: who uses which tools and who can speak to which topics." />
+<meta name="description" content="A searchable directory of The Aftermind mastermind group: who uses which tools, CRMs, and markets they work." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -202,6 +202,17 @@
   a.tag.link { color: var(--maroon); text-decoration: none; }
   a.tag.link:hover { background: var(--maroon); color: var(--paper-2); }
 
+  .splitwrap { display: inline-block; vertical-align: middle; }
+  .splitbar { display: flex; width: 240px; max-width: 60vw; height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+  .splitseg { height: 100%; }
+  .splitlegend { display: block; margin-top: 5px; font-family: "Space Mono", monospace; font-size: 10.5px; color: var(--ink-soft); }
+  .splititem { margin-right: 12px; white-space: nowrap; }
+  .splitdot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; }
+
+  .splitinputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .splitinputs label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: "Space Mono", monospace; font-size: 12px; color: var(--ink-soft); text-transform: none; letter-spacing: 0; margin: 0; }
+  .splitinputs input { width: 72px; }
+
   .card-actions { margin-top: 12px; display: flex; gap: 8px; }
   .linkbtn {
     font-family: "Space Mono", monospace;
@@ -335,12 +346,12 @@
         <input type="text" id="f-name" required />
       </div>
       <div class="field">
-        <label for="f-role">Role / description</label>
-        <input type="text" id="f-role" placeholder="e.g. Wedding MC and magician, Sydney" />
+        <label for="f-role">Role / title</label>
+        <input type="text" id="f-role" placeholder="e.g. Wedding MC & magician" />
       </div>
       <div class="field">
-        <label for="f-blurb">One-line blurb</label>
-        <textarea id="f-blurb" placeholder="What you do / what you're working on"></textarea>
+        <label for="f-city">City / location</label>
+        <input type="text" id="f-city" placeholder="e.g. London" />
       </div>
       <div class="field">
         <label for="f-website">Website</label>
@@ -352,17 +363,27 @@
         <div class="hint">Other links (Facebook, YouTube, etc.) are kept as-is when you save.</div>
       </div>
       <div class="field">
-        <label for="f-crm">CRM (just one)</label>
-        <input type="text" id="f-crm" placeholder="e.g. Zoho CRM, HubSpot, 17hats" />
+        <label for="f-crm-select">CRM (just one)</label>
+        <select id="f-crm-select">
+          <option value="">— none / not set —</option>
+          <option value="17Hats">17Hats</option>
+          <option value="Mago">Mago</option>
+          <option value="HoneyBook">HoneyBook</option>
+          <option value="SpeakerFlow">SpeakerFlow</option>
+          <option value="GHL">GHL (GoHighLevel)</option>
+          <option value="__other">Other…</option>
+        </select>
+        <input type="text" id="f-crm-other" placeholder="Type your CRM" style="display:none;margin-top:6px" />
       </div>
       <div class="field">
-        <label>Markets you work</label>
-        <div class="checkrow" id="f-markets">
-          <label><input type="checkbox" value="Corporate" /> Corporate</label>
-          <label><input type="checkbox" value="Weddings" /> Weddings</label>
-          <label><input type="checkbox" value="Private parties" /> Private parties</label>
-          <label><input type="checkbox" value="Other" /> Other</label>
+        <label>Gig / turnover split by market</label>
+        <div class="splitinputs" id="f-split">
+          <label><span>Corporate</span><input type="number" min="0" max="100" data-market="Corporate" /></label>
+          <label><span>Weddings</span><input type="number" min="0" max="100" data-market="Weddings" /></label>
+          <label><span>Private parties</span><input type="number" min="0" max="100" data-market="Private parties" /></label>
+          <label><span>Other</span><input type="number" min="0" max="100" data-market="Other" /></label>
         </div>
+        <div class="hint">Rough % of your gigs/turnover — should total 100%. Leave all blank to skip. <span id="splitTotal"></span></div>
       </div>
       <div class="field">
         <label for="f-turnover">Annual turnover band (USD)</label>
@@ -381,16 +402,13 @@
         <label>Flags</label>
         <div class="checkrow">
           <label><input type="checkbox" id="f-vas" /> I use VAs (virtual assistants)</label>
+          <label><input type="checkbox" id="f-ai" /> AI powerhouse</label>
           <label><input type="checkbox" id="f-1to1" /> Open to a 1:1 if a member has questions</label>
         </div>
       </div>
       <div class="field">
         <label for="f-tools">Tools (comma separated)</label>
         <input type="text" id="f-tools" placeholder="Claude, Suno.ai, Notion" />
-      </div>
-      <div class="field">
-        <label for="f-topics">Topics you can speak to (comma separated)</label>
-        <input type="text" id="f-topics" placeholder="Wedding MC pricing, marketing systems" />
       </div>
       <p class="err" id="formErr" style="display:none"></p>
       <div class="modal-actions">
@@ -432,19 +450,26 @@ function el(tag, cls, txt) {
 function decode(s) { var t = document.createElement("textarea"); t.innerHTML = s; return t.value; }
 
 function normalizeMember(m) {
+  var split = {};
+  if (m.marketSplit && typeof m.marketSplit === "object" && !Array.isArray(m.marketSplit)) {
+    MARKETS.forEach(function (k) {
+      var v = parseInt(m.marketSplit[k], 10);
+      if (v > 0) split[k] = v;
+    });
+  }
   return {
     name: m.name || "",
     role: m.role || "",
-    blurb: m.blurb || "",
+    city: m.city || "",
     website: m.website || "",
     socials: (m.socials && typeof m.socials === "object" && !Array.isArray(m.socials)) ? m.socials : {},
     crm: m.crm || "",
     usesVAs: !!m.usesVAs,
-    markets: Array.isArray(m.markets) ? m.markets.slice() : [],
-    turnoverBand: m.turnoverBand || "Undisclosed",
+    aiPowerhouse: !!m.aiPowerhouse,
     openToOneToOne: !!m.openToOneToOne,
+    marketSplit: split,
+    turnoverBand: m.turnoverBand || "Undisclosed",
     tools: Array.isArray(m.tools) ? m.tools.slice() : [],
-    topics: Array.isArray(m.topics) ? m.topics.slice() : [],
     needsReview: !!m.needsReview
   };
 }
@@ -480,12 +505,12 @@ function sbUpdate(m) {
 
 // ---- Filtering ----------------------------------------------------------
 function memberHaystack(m) {
-  return [m.name, m.role, m.blurb, m.crm, m.turnoverBand]
-    .concat(m.tools, m.topics, m.markets)
+  return [m.name, m.role, m.city, m.crm, m.turnoverBand]
+    .concat(m.tools, Object.keys(m.marketSplit))
     .join(" ").toLowerCase();
 }
 function memberChipValues(m) {
-  return m.tools.concat(m.topics, m.markets);
+  return m.tools.concat(Object.keys(m.marketSplit));
 }
 function getFiltered() {
   var q = $("#search").value.trim().toLowerCase();
@@ -514,8 +539,7 @@ function uniqueSorted(arr) {
 function renderChips() {
   var groups = [
     { label: "Tools", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.tools; }))) },
-    { label: "Topics", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.topics; }))) },
-    { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.markets; }))) }
+    { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return Object.keys(m.marketSplit); }))) }
   ];
   var host = $("#chipgroups");
   host.innerHTML = "";
@@ -576,6 +600,44 @@ function linkRow(m) {
   return row;
 }
 
+// fixed colour per market for the split bar
+var MARKET_COLORS = {
+  "Corporate": "#6e1423", "Weddings": "#b07d3a",
+  "Private parties": "#5a7d5a", "Other": "#9a8f7a"
+};
+
+function splitRow(m) {
+  var row = el("div", "tagrow");
+  row.appendChild(el("span", "rowlabel", "Gig split"));
+  var present = MARKETS.filter(function (k) { return m.marketSplit[k] > 0; });
+  if (!present.length) {
+    row.appendChild(el("span", "tag empty", "—"));
+    return row;
+  }
+  var wrap = el("span", "splitwrap");
+  var bar = el("span", "splitbar");
+  present.forEach(function (k) {
+    var seg = el("span", "splitseg");
+    seg.style.width = m.marketSplit[k] + "%";
+    seg.style.background = MARKET_COLORS[k] || "#9a8f7a";
+    seg.title = k + " " + m.marketSplit[k] + "%";
+    bar.appendChild(seg);
+  });
+  wrap.appendChild(bar);
+  var legend = el("span", "splitlegend");
+  present.forEach(function (k) {
+    var item = el("span", "splititem");
+    var dot = el("span", "splitdot");
+    dot.style.background = MARKET_COLORS[k] || "#9a8f7a";
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(k + " " + m.marketSplit[k] + "%"));
+    legend.appendChild(item);
+  });
+  wrap.appendChild(legend);
+  row.appendChild(wrap);
+  return row;
+}
+
 function renderCards() {
   var list = getFiltered();
   var host = $("#cards");
@@ -590,14 +652,13 @@ function renderCards() {
     var head = el("div", "card-head");
     var titleWrap = el("div");
     titleWrap.appendChild(el("h3", "card-name", m.name));
-    if (m.role) titleWrap.appendChild(el("p", "card-role", m.role));
+    var sub = [m.role, m.city].filter(Boolean).join(" · ");
+    if (sub) titleWrap.appendChild(el("p", "card-role", sub));
     head.appendChild(titleWrap);
     if (m.needsReview) head.appendChild(el("span", "review-flag", "needs review"));
     card.appendChild(head);
 
-    if (m.blurb) card.appendChild(el("p", "blurb", m.blurb));
-
-    // meta line: CRM, market, turnover, VAs, 1:1
+    // meta line: CRM, turnover, VAs, AI, 1:1
     var meta = el("div", "meta");
     function metaItem(labelText, valueNode) {
       var it = el("span", "item");
@@ -606,19 +667,18 @@ function renderCards() {
       else it.appendChild(valueNode);
       return it;
     }
+    function yesNo(v) { return el("span", v ? "yes" : "", v ? "yes" : "no"); }
     meta.appendChild(metaItem("CRM:", m.crm || "—"));
     meta.appendChild(metaItem("Turnover:", m.turnoverBand || "Undisclosed"));
-    var vaNode = el("span", m.usesVAs ? "yes" : "", m.usesVAs ? "yes" : "no");
-    meta.appendChild(metaItem("VAs:", vaNode));
-    var oneNode = el("span", m.openToOneToOne ? "yes" : "", m.openToOneToOne ? "yes" : "no");
-    meta.appendChild(metaItem("1:1 ok:", oneNode));
+    meta.appendChild(metaItem("VAs:", yesNo(m.usesVAs)));
+    meta.appendChild(metaItem("AI powerhouse:", yesNo(m.aiPowerhouse)));
+    meta.appendChild(metaItem("1:1 ok:", yesNo(m.openToOneToOne)));
     card.appendChild(meta);
 
     card.appendChild(linkRow(m));
 
-    card.appendChild(tagRow("Markets", m.markets));
+    card.appendChild(splitRow(m));
     card.appendChild(tagRow("Tools", m.tools));
-    card.appendChild(tagRow("Topics", m.topics));
 
     var actions = el("div", "card-actions");
     var editLink = el("button", "linkbtn", "Edit");
@@ -651,21 +711,47 @@ function openEditor(idx) {
     : "Update any field, then save.";
   $("#f-name").value = m.name;
   $("#f-role").value = m.role;
-  $("#f-blurb").value = m.blurb;
+  $("#f-city").value = m.city;
   $("#f-website").value = m.website;
   $("#f-instagram").value = (m.socials && m.socials.instagram) || "";
-  $("#f-crm").value = m.crm;
+  setCrmFields(m.crm);
   $("#f-turnover").value = decodeTurnover(m.turnoverBand);
   $("#f-vas").checked = m.usesVAs;
+  $("#f-ai").checked = m.aiPowerhouse;
   $("#f-1to1").checked = m.openToOneToOne;
   $("#f-tools").value = m.tools.join(", ");
-  $("#f-topics").value = m.topics.join(", ");
-  var boxes = $("#f-markets").querySelectorAll("input[type=checkbox]");
-  boxes.forEach(function (b) { b.checked = m.markets.indexOf(b.value) !== -1; });
+  $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
+    var v = m.marketSplit[inp.getAttribute("data-market")];
+    inp.value = v ? v : "";
+  });
+  updateSplitTotal();
   $("#deleteBtn").style.display = "none"; // deletion is admin-only (Supabase dashboard)
   $("#formErr").style.display = "none";
   $("#overlay").classList.add("open");
   $("#f-name").focus();
+}
+
+var CRM_OPTIONS = ["17Hats", "Mago", "HoneyBook", "SpeakerFlow", "GHL"];
+function setCrmFields(crm) {
+  var sel = $("#f-crm-select"), other = $("#f-crm-other");
+  if (!crm) { sel.value = ""; other.style.display = "none"; other.value = ""; }
+  else if (CRM_OPTIONS.indexOf(crm) !== -1) { sel.value = crm; other.style.display = "none"; other.value = ""; }
+  else { sel.value = "__other"; other.style.display = "block"; other.value = crm; }
+}
+function readCrm() {
+  var sel = $("#f-crm-select").value;
+  if (sel === "__other") return $("#f-crm-other").value.trim();
+  return sel;
+}
+function updateSplitTotal() {
+  var total = 0;
+  $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
+    total += parseInt(inp.value, 10) || 0;
+  });
+  var span = $("#splitTotal");
+  if (total === 0) { span.textContent = ""; return; }
+  span.textContent = "Total: " + total + "%";
+  span.style.color = (total === 100) ? "var(--ink-soft)" : "var(--maroon)";
 }
 // turnover options in the <select> use plain hyphens via &ndash; decode at compare time
 function decodeTurnover(v) {
@@ -686,10 +772,16 @@ function submitForm(ev) {
   ev.preventDefault();
   var name = $("#f-name").value.trim();
   if (!name) { showFormErr("Name is required."); return; }
-  var markets = [];
-  $("#f-markets").querySelectorAll("input[type=checkbox]").forEach(function (b) {
-    if (b.checked) markets.push(b.value);
+  // market split: build object + validate it totals 100 (or is left empty)
+  var marketSplit = {}, splitTotal = 0;
+  $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
+    var v = parseInt(inp.value, 10) || 0;
+    if (v > 0) { marketSplit[inp.getAttribute("data-market")] = v; splitTotal += v; }
   });
+  if (splitTotal !== 0 && splitTotal !== 100) {
+    showFormErr("Gig split should total 100% (it's currently " + splitTotal + "%). Leave all blank to skip.");
+    return;
+  }
   // preserve existing socials (Facebook, YouTube, etc.); update only Instagram from the form
   var socials = {};
   if (editIndex != null && members[editIndex].socials) {
@@ -700,16 +792,16 @@ function submitForm(ev) {
   var data = normalizeMember({
     name: name,
     role: $("#f-role").value.trim(),
-    blurb: $("#f-blurb").value.trim(),
+    city: $("#f-city").value.trim(),
     website: $("#f-website").value.trim(),
     socials: socials,
-    crm: $("#f-crm").value.trim(),
+    crm: readCrm(),
     usesVAs: $("#f-vas").checked,
-    markets: markets,
+    aiPowerhouse: $("#f-ai").checked,
+    marketSplit: marketSplit,
     turnoverBand: $("#f-turnover").value,
     openToOneToOne: $("#f-1to1").checked,
     tools: splitList($("#f-tools").value),
-    topics: splitList($("#f-topics").value),
     // preserve an existing review flag on edit; new self-adds are trusted
     needsReview: editIndex != null ? members[editIndex].needsReview : false
   });
@@ -780,6 +872,12 @@ function wireUp() {
     render();
   });
   $("#cancelBtn").addEventListener("click", closeEditor);
+  $("#f-crm-select").addEventListener("change", function () {
+    var other = $("#f-crm-other");
+    if (this.value === "__other") { other.style.display = "block"; other.focus(); }
+    else { other.style.display = "none"; other.value = ""; }
+  });
+  $("#f-split").addEventListener("input", updateSplitTotal);
   $("#memberForm").addEventListener("submit", submitForm);
   $("#overlay").addEventListener("click", function (e) { if (e.target === $("#overlay")) closeEditor(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeEditor(); });
