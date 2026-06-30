@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Aftermind Roster</title>
+<meta name="description" content="A searchable directory of The Aftermind mastermind group: who uses which tools and who can speak to which topics." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4ede0;
+    --paper-2: #faf5ea;
+    --ink: #211c17;
+    --ink-soft: #5a5247;
+    --maroon: #6e1423;
+    --maroon-soft: #8c3a47;
+    --line: #d9cdb8;
+    --tag-bg: #ece2cf;
+    --shadow: 0 1px 2px rgba(33, 28, 23, 0.08), 0 6px 18px rgba(33, 28, 23, 0.06);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--maroon); }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  header.site { margin-bottom: 18px; }
+  .kicker {
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--maroon);
+    margin: 0 0 6px;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(30px, 5vw, 46px);
+    line-height: 1.05;
+    margin: 0 0 8px;
+  }
+  .lede { color: var(--ink-soft); max-width: 56ch; margin: 0; }
+
+  .notice {
+    margin: 18px 0 0;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--maroon);
+    background: var(--paper-2);
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  .notice strong { color: var(--ink); }
+
+  /* Controls */
+  .controls { margin: 22px 0 8px; }
+  .searchrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  #search {
+    flex: 1 1 280px;
+    font-family: inherit;
+    font-size: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+  #search:focus { outline: 2px solid var(--maroon); outline-offset: 1px; }
+
+  .btn {
+    font-family: "Space Mono", monospace;
+    font-size: 12.5px;
+    padding: 11px 14px;
+    border: 1px solid var(--maroon);
+    background: transparent;
+    color: var(--maroon);
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--maroon); color: var(--paper-2); }
+  .btn.solid { background: var(--maroon); color: var(--paper-2); }
+  .btn.solid:hover { background: var(--maroon-soft); border-color: var(--maroon-soft); }
+  .btn.ghost { border-color: var(--line); color: var(--ink-soft); }
+  .btn.ghost:hover { background: var(--tag-bg); color: var(--ink); }
+
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+  /* Chip filters */
+  .chipgroups { margin-top: 16px; }
+  .chipgroup { margin-bottom: 10px; }
+  .chipgroup > .label {
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: 6px;
+  }
+  .chips { display: inline; }
+  .chip {
+    display: inline-block;
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    padding: 4px 10px;
+    margin: 0 6px 6px 0;
+    border: 1px solid var(--line);
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .chip:hover { border-color: var(--maroon); color: var(--maroon); }
+  .chip.active { background: var(--maroon); color: var(--paper-2); border-color: var(--maroon); }
+
+  .countrow {
+    font-family: "Space Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 16px 0 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Cards */
+  .cards { display: grid; gap: 16px; }
+  .card {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 18px 16px;
+    box-shadow: var(--shadow);
+  }
+  .card.review { border-left: 4px solid var(--maroon); }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .card-name {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    margin: 0;
+  }
+  .card-role { color: var(--maroon); font-size: 14px; font-weight: 500; margin: 2px 0 0; }
+  .review-flag {
+    font-family: "Space Mono", monospace;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--maroon);
+    color: var(--paper-2);
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .blurb { margin: 10px 0 12px; color: var(--ink); }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 12px; }
+  .meta .item {
+    font-family: "Space Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .meta .item b { color: var(--ink); font-weight: 700; }
+  .yes { color: var(--maroon); font-weight: 700; }
+
+  .tagrow { margin: 6px 0; }
+  .tagrow .rowlabel {
+    font-family: "Space Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: inline-block;
+    min-width: 64px;
+  }
+  .tag {
+    display: inline-block;
+    font-family: "Space Mono", monospace;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    margin: 0 5px 5px 0;
+    background: var(--tag-bg);
+    color: var(--ink);
+    border-radius: 5px;
+  }
+  .tag.empty { color: var(--ink-soft); background: transparent; font-style: italic; }
+
+  .card-actions { margin-top: 12px; display: flex; gap: 8px; }
+  .linkbtn {
+    font-family: "Space Mono", monospace;
+    font-size: 11.5px;
+    background: none;
+    border: none;
+    color: var(--maroon);
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+  }
+  .linkbtn:hover { color: var(--maroon-soft); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 40px 0;
+    font-family: "Space Mono", monospace;
+    font-size: 13px;
+  }
+
+  /* Editor / modal */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(33, 28, 23, 0.45);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 16px;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    max-width: 560px;
+    width: 100%;
+    padding: 22px;
+    box-shadow: 0 20px 60px rgba(33,28,23,0.3);
+  }
+  .modal h2 { font-family: "Fraunces", serif; font-weight: 600; margin: 0 0 4px; font-size: 24px; }
+  .modal p.sub { margin: 0 0 16px; color: var(--ink-soft); font-size: 13.5px; }
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-family: "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .field input[type=text], .field input[type=url], .field textarea, .field select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .field textarea { min-height: 64px; resize: vertical; }
+  .field .hint { font-size: 11.5px; color: var(--ink-soft); margin-top: 4px; }
+  .checkrow { display: flex; flex-wrap: wrap; gap: 12px; }
+  .checkrow label {
+    font-family: "Inter", sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin: 0;
+  }
+  .modal-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 20px; }
+  .modal-actions .right { display: flex; gap: 8px; }
+
+  footer.site { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-soft); font-family: "Space Mono", monospace; }
+  .err { color: var(--maroon); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <p class="kicker">The Aftermind &middot; Member Roster</p>
+    <h1>Who knows what</h1>
+    <p class="lede">A searchable directory of the mastermind. Find who uses a given tool or can speak to a given topic, then go ask them.</p>
+    <div class="notice">
+      <strong>Proof of concept.</strong> Edits and new entries you make here are saved <strong>in your browser only</strong> — they don't yet sync for everyone.
+      To publish changes to the group, use <em>Export members.json</em> and commit the file back to the repo.
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="searchrow">
+      <input id="search" type="search" placeholder="Search name, tool, topic, CRM, market&hellip;" autocomplete="off" />
+      <button class="btn solid" id="addBtn">+ Add yourself</button>
+    </div>
+    <div class="toolbar">
+      <button class="btn ghost" id="exportBtn">Export members.json</button>
+      <button class="btn ghost" id="copyBtn">Copy JSON</button>
+      <button class="btn ghost" id="resetBtn">Reset to published</button>
+    </div>
+    <div class="chipgroups" id="chipgroups"></div>
+  </div>
+
+  <div class="countrow">
+    <span id="count"></span>
+    <span id="localFlag"></span>
+  </div>
+
+  <div class="cards" id="cards"></div>
+  <div class="empty-state" id="empty" style="display:none">No members match. Try clearing the search or filters.</div>
+
+  <footer class="site">The Aftermind Roster &middot; static site, no login &middot; data lives in <code>members.json</code></footer>
+</div>
+
+<!-- Editor modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add yourself</h2>
+    <p class="sub" id="modalSub">A quick questionnaire. Everything is optional except your name.</p>
+    <form id="memberForm">
+      <div class="field">
+        <label for="f-name">Name *</label>
+        <input type="text" id="f-name" required />
+      </div>
+      <div class="field">
+        <label for="f-role">Role / description</label>
+        <input type="text" id="f-role" placeholder="e.g. Wedding MC and magician, Sydney" />
+      </div>
+      <div class="field">
+        <label for="f-blurb">One-line blurb</label>
+        <textarea id="f-blurb" placeholder="What you do / what you're working on"></textarea>
+      </div>
+      <div class="field">
+        <label for="f-website">Website</label>
+        <input type="url" id="f-website" placeholder="https://" />
+      </div>
+      <div class="field">
+        <label for="f-crm">CRM (just one)</label>
+        <input type="text" id="f-crm" placeholder="e.g. Zoho CRM, HubSpot, 17hats" />
+      </div>
+      <div class="field">
+        <label>Markets you work</label>
+        <div class="checkrow" id="f-markets">
+          <label><input type="checkbox" value="Corporate" /> Corporate</label>
+          <label><input type="checkbox" value="Weddings" /> Weddings</label>
+          <label><input type="checkbox" value="Private parties" /> Private parties</label>
+          <label><input type="checkbox" value="Other" /> Other</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-turnover">Annual turnover band (USD)</label>
+        <select id="f-turnover">
+          <option value="Undisclosed">Undisclosed</option>
+          <option value="Under $50k">Under $50k</option>
+          <option value="$50k&ndash;$100k">$50k&ndash;$100k</option>
+          <option value="$100k&ndash;$150k">$100k&ndash;$150k</option>
+          <option value="$150k&ndash;$200k">$150k&ndash;$200k</option>
+          <option value="$200k&ndash;$250k">$200k&ndash;$250k</option>
+          <option value="$250k&ndash;$300k">$250k&ndash;$300k</option>
+          <option value="$300k+">$300k+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Flags</label>
+        <div class="checkrow">
+          <label><input type="checkbox" id="f-vas" /> I use VAs (virtual assistants)</label>
+          <label><input type="checkbox" id="f-1to1" /> Open to a 1:1 if a member has questions</label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-tools">Tools (comma separated)</label>
+        <input type="text" id="f-tools" placeholder="Claude, Suno.ai, Notion" />
+      </div>
+      <div class="field">
+        <label for="f-topics">Topics you can speak to (comma separated)</label>
+        <input type="text" id="f-topics" placeholder="Wedding MC pricing, marketing systems" />
+      </div>
+      <p class="err" id="formErr" style="display:none"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="deleteBtn" style="display:none">Delete</button>
+        <div class="right">
+          <button type="button" class="btn ghost" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn solid" id="saveBtn">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ---- Config -------------------------------------------------------------
+var DATA_URL = "members.json";
+var STORAGE_KEY = "aftermind-roster-v1";
+var MARKETS = ["Corporate", "Weddings", "Private parties", "Other"];
+
+// ---- State --------------------------------------------------------------
+var published = [];      // baseline from members.json
+var members = [];        // working copy (possibly with local edits)
+var usingLocal = false;  // are we showing localStorage edits?
+var activeChips = {};    // value -> true
+var editIndex = null;    // index being edited, or null for "add"
+
+// ---- Helpers ------------------------------------------------------------
+function $(sel) { return document.querySelector(sel); }
+function el(tag, cls, txt) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (txt != null) e.textContent = txt;
+  return e;
+}
+function decode(s) { var t = document.createElement("textarea"); t.innerHTML = s; return t.value; }
+
+function normalizeMember(m) {
+  return {
+    name: m.name || "",
+    role: m.role || "",
+    blurb: m.blurb || "",
+    website: m.website || "",
+    crm: m.crm || "",
+    usesVAs: !!m.usesVAs,
+    markets: Array.isArray(m.markets) ? m.markets.slice() : [],
+    turnoverBand: m.turnoverBand || "Undisclosed",
+    openToOneToOne: !!m.openToOneToOne,
+    tools: Array.isArray(m.tools) ? m.tools.slice() : [],
+    topics: Array.isArray(m.topics) ? m.topics.slice() : [],
+    needsReview: !!m.needsReview
+  };
+}
+
+function loadLocal() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.map(normalizeMember);
+  } catch (e) {}
+  return null;
+}
+function saveLocal() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+    usingLocal = true;
+    renderLocalFlag();
+  } catch (e) {}
+}
+
+// ---- Filtering ----------------------------------------------------------
+function memberHaystack(m) {
+  return [m.name, m.role, m.blurb, m.crm, m.turnoverBand]
+    .concat(m.tools, m.topics, m.markets)
+    .join(" ").toLowerCase();
+}
+function memberChipValues(m) {
+  return m.tools.concat(m.topics, m.markets);
+}
+function getFiltered() {
+  var q = $("#search").value.trim().toLowerCase();
+  var active = Object.keys(activeChips).filter(function (k) { return activeChips[k]; });
+  return members.filter(function (m) {
+    if (q && memberHaystack(m).indexOf(q) === -1) return false;
+    if (active.length) {
+      var vals = memberChipValues(m);
+      // AND semantics: member must carry every active chip
+      for (var i = 0; i < active.length; i++) {
+        if (vals.indexOf(active[i]) === -1) return false;
+      }
+    }
+    return true;
+  });
+}
+
+// ---- Rendering ----------------------------------------------------------
+function uniqueSorted(arr) {
+  var seen = {}, out = [];
+  arr.forEach(function (v) { if (v && !seen[v]) { seen[v] = 1; out.push(v); } });
+  return out.sort(function (a, b) { return a.toLowerCase().localeCompare(b.toLowerCase()); });
+}
+
+function renderChips() {
+  var groups = [
+    { label: "Tools", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.tools; }))) },
+    { label: "Topics", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.topics; }))) },
+    { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.markets; }))) }
+  ];
+  var host = $("#chipgroups");
+  host.innerHTML = "";
+  groups.forEach(function (g) {
+    if (!g.values.length) return;
+    var row = el("div", "chipgroup");
+    row.appendChild(el("span", "label", g.label));
+    var chips = el("span", "chips");
+    g.values.forEach(function (v) {
+      var c = el("button", "chip" + (activeChips[v] ? " active" : ""), v);
+      c.type = "button";
+      c.addEventListener("click", function () {
+        activeChips[v] = !activeChips[v];
+        render();
+      });
+      chips.appendChild(c);
+    });
+    row.appendChild(chips);
+    host.appendChild(row);
+  });
+}
+
+function tagRow(label, items) {
+  var row = el("div", "tagrow");
+  row.appendChild(el("span", "rowlabel", label));
+  if (!items.length) {
+    row.appendChild(el("span", "tag empty", "—"));
+  } else {
+    items.forEach(function (t) { row.appendChild(el("span", "tag", t)); });
+  }
+  return row;
+}
+
+function renderCards() {
+  var list = getFiltered();
+  var host = $("#cards");
+  host.innerHTML = "";
+  $("#count").textContent = list.length + " of " + members.length + " member" + (members.length === 1 ? "" : "s");
+  $("#empty").style.display = list.length ? "none" : "block";
+
+  list.forEach(function (m) {
+    var idx = members.indexOf(m);
+    var card = el("div", "card" + (m.needsReview ? " review" : ""));
+
+    var head = el("div", "card-head");
+    var titleWrap = el("div");
+    titleWrap.appendChild(el("h3", "card-name", m.name));
+    if (m.role) titleWrap.appendChild(el("p", "card-role", m.role));
+    head.appendChild(titleWrap);
+    if (m.needsReview) head.appendChild(el("span", "review-flag", "needs review"));
+    card.appendChild(head);
+
+    if (m.blurb) card.appendChild(el("p", "blurb", m.blurb));
+
+    // meta line: CRM, market, turnover, VAs, 1:1
+    var meta = el("div", "meta");
+    function metaItem(labelText, valueNode) {
+      var it = el("span", "item");
+      it.appendChild(el("b", null, labelText + " "));
+      if (typeof valueNode === "string") it.appendChild(document.createTextNode(valueNode));
+      else it.appendChild(valueNode);
+      return it;
+    }
+    meta.appendChild(metaItem("CRM:", m.crm || "—"));
+    meta.appendChild(metaItem("Turnover:", m.turnoverBand || "Undisclosed"));
+    var vaNode = el("span", m.usesVAs ? "yes" : "", m.usesVAs ? "yes" : "no");
+    meta.appendChild(metaItem("VAs:", vaNode));
+    var oneNode = el("span", m.openToOneToOne ? "yes" : "", m.openToOneToOne ? "yes" : "no");
+    meta.appendChild(metaItem("1:1 ok:", oneNode));
+    if (m.website) {
+      var a = el("a", null, "website ↗");
+      a.href = m.website;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      meta.appendChild(metaItem("Site:", a));
+    }
+    card.appendChild(meta);
+
+    card.appendChild(tagRow("Markets", m.markets));
+    card.appendChild(tagRow("Tools", m.tools));
+    card.appendChild(tagRow("Topics", m.topics));
+
+    var actions = el("div", "card-actions");
+    var editLink = el("button", "linkbtn", "Edit");
+    editLink.type = "button";
+    editLink.addEventListener("click", function () { openEditor(idx); });
+    actions.appendChild(editLink);
+    card.appendChild(actions);
+
+    host.appendChild(card);
+  });
+}
+
+function renderLocalFlag() {
+  $("#localFlag").textContent = usingLocal ? "showing your local edits" : "showing published data";
+}
+
+function render() {
+  renderChips();
+  renderCards();
+  renderLocalFlag();
+}
+
+// ---- Editor -------------------------------------------------------------
+function openEditor(idx) {
+  editIndex = (typeof idx === "number") ? idx : null;
+  var m = editIndex == null ? normalizeMember({}) : members[editIndex];
+  $("#modalTitle").textContent = editIndex == null ? "Add yourself" : "Edit member";
+  $("#modalSub").textContent = editIndex == null
+    ? "A quick questionnaire. Everything is optional except your name."
+    : "Update any field, then save.";
+  $("#f-name").value = m.name;
+  $("#f-role").value = m.role;
+  $("#f-blurb").value = m.blurb;
+  $("#f-website").value = m.website;
+  $("#f-crm").value = m.crm;
+  $("#f-turnover").value = decodeTurnover(m.turnoverBand);
+  $("#f-vas").checked = m.usesVAs;
+  $("#f-1to1").checked = m.openToOneToOne;
+  $("#f-tools").value = m.tools.join(", ");
+  $("#f-topics").value = m.topics.join(", ");
+  var boxes = $("#f-markets").querySelectorAll("input[type=checkbox]");
+  boxes.forEach(function (b) { b.checked = m.markets.indexOf(b.value) !== -1; });
+  $("#deleteBtn").style.display = editIndex == null ? "none" : "inline-block";
+  $("#formErr").style.display = "none";
+  $("#overlay").classList.add("open");
+  $("#f-name").focus();
+}
+// turnover options in the <select> use plain hyphens via &ndash; decode at compare time
+function decodeTurnover(v) {
+  // match against the option set; fall back to Undisclosed
+  var opts = $("#f-turnover").options;
+  for (var i = 0; i < opts.length; i++) {
+    if (opts[i].value === v || opts[i].text === v) return opts[i].value;
+  }
+  return "Undisclosed";
+}
+function closeEditor() { $("#overlay").classList.remove("open"); editIndex = null; }
+
+function splitList(s) {
+  return s.split(",").map(function (x) { return x.trim(); }).filter(function (x) { return x.length; });
+}
+
+function submitForm(ev) {
+  ev.preventDefault();
+  var name = $("#f-name").value.trim();
+  if (!name) { showFormErr("Name is required."); return; }
+  var markets = [];
+  $("#f-markets").querySelectorAll("input[type=checkbox]").forEach(function (b) {
+    if (b.checked) markets.push(b.value);
+  });
+  var data = normalizeMember({
+    name: name,
+    role: $("#f-role").value.trim(),
+    blurb: $("#f-blurb").value.trim(),
+    website: $("#f-website").value.trim(),
+    crm: $("#f-crm").value.trim(),
+    usesVAs: $("#f-vas").checked,
+    markets: markets,
+    turnoverBand: $("#f-turnover").value,
+    openToOneToOne: $("#f-1to1").checked,
+    tools: splitList($("#f-tools").value),
+    topics: splitList($("#f-topics").value),
+    // preserve an existing review flag on edit; new self-adds are trusted
+    needsReview: editIndex != null ? members[editIndex].needsReview : false
+  });
+  if (editIndex == null) members.push(data);
+  else members[editIndex] = data;
+  saveLocal();
+  closeEditor();
+  render();
+}
+function showFormErr(msg) { var e = $("#formErr"); e.textContent = msg; e.style.display = "block"; }
+
+function deleteMember() {
+  if (editIndex == null) return;
+  if (!confirm("Remove " + members[editIndex].name + " from your local copy?")) return;
+  members.splice(editIndex, 1);
+  saveLocal();
+  closeEditor();
+  render();
+}
+
+// ---- Export / reset -----------------------------------------------------
+function exportJSON() {
+  var blob = new Blob([JSON.stringify(members, null, 2) + "\n"], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url; a.download = "members.json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function copyJSON() {
+  var text = JSON.stringify(members, null, 2) + "\n";
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { flashBtn("#copyBtn", "Copied!"); });
+  } else {
+    window.prompt("Copy the JSON below:", text);
+  }
+}
+function flashBtn(sel, msg) {
+  var b = $(sel); var old = b.textContent; b.textContent = msg;
+  setTimeout(function () { b.textContent = old; }, 1400);
+}
+function resetToPublished() {
+  if (!confirm("Discard your local edits and reload the published roster?")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  members = published.map(normalizeMember);
+  usingLocal = false;
+  activeChips = {};
+  render();
+}
+
+// ---- Boot ---------------------------------------------------------------
+function wireUp() {
+  $("#search").addEventListener("input", renderCards);
+  $("#addBtn").addEventListener("click", function () { openEditor(null); });
+  $("#exportBtn").addEventListener("click", exportJSON);
+  $("#copyBtn").addEventListener("click", copyJSON);
+  $("#resetBtn").addEventListener("click", resetToPublished);
+  $("#cancelBtn").addEventListener("click", closeEditor);
+  $("#deleteBtn").addEventListener("click", deleteMember);
+  $("#memberForm").addEventListener("submit", submitForm);
+  $("#overlay").addEventListener("click", function (e) { if (e.target === $("#overlay")) closeEditor(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeEditor(); });
+}
+
+function boot() {
+  wireUp();
+  fetch(DATA_URL, { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      published = data.map(normalizeMember);
+      var local = loadLocal();
+      if (local) { members = local; usingLocal = true; }
+      else { members = published.map(normalizeMember); usingLocal = false; }
+      render();
+    })
+    .catch(function (err) {
+      $("#cards").innerHTML = "";
+      var e = el("div", "empty-state");
+      e.innerHTML = "<span class='err'>Could not load members.json (" + err.message +
+        ").</span><br>If you opened this file directly, run it from a local server " +
+        "(e.g. <code>python -m http.server</code>) so fetch() can read the JSON.";
+      $("#cards").appendChild(e);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", boot);
+</script>
+</body>
+</html>

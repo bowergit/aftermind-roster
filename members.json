@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Daniel Bower",
+    "role": "Magician and host, London",
+    "blurb": "Built a marketing information system on Zoho CRM data using Claude. Performed in a KSI YouTube magic competition.",
+    "website": "",
+    "crm": "Zoho CRM",
+    "usesVAs": false,
+    "markets": ["Corporate"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": true,
+    "tools": ["Claude", "17hats"],
+    "topics": ["Marketing systems", "Corporate magic pricing", "Lead scoring"],
+    "needsReview": false
+  },
+  {
+    "name": "Daniel C",
+    "role": "Mastermind member",
+    "blurb": "Built a Claude skill for setting up a marketing information system. Hosting dinners at Magic Live.",
+    "website": "",
+    "crm": "Zoho CRM",
+    "usesVAs": false,
+    "markets": ["Other"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": true,
+    "tools": ["Claude"],
+    "topics": ["Marketing systems", "Mastermind structure", "Event planning", "Nonprofit structuring"],
+    "needsReview": false
+  },
+  {
+    "name": "Durgy",
+    "role": "Wedding MC and magician",
+    "blurb": "Uses Claude to convert wedding run sheets into structured Excel files. Looking to move into corporate MC work.",
+    "website": "",
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Weddings"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": true,
+    "tools": ["Claude"],
+    "topics": ["Wedding MC work", "Run sheet automation", "Pricing ceiling"],
+    "needsReview": false
+  },
+  {
+    "name": "David Martinez",
+    "role": "Magician, Bay Area",
+    "blurb": "Performed as an official World Cup hospitality magician across four games. Developing a stage persona called The Dazzler.",
+    "website": "",
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": true,
+    "tools": ["Suno.ai"],
+    "topics": ["Large scale corporate gigs", "Persona development"],
+    "needsReview": false
+  }
+]
