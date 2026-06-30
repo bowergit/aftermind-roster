@@ -3,8 +3,7 @@
 A searchable directory of **The Aftermind** mastermind group — who uses which tools
 and who can speak to which topics, so any member knows who to go to with a question.
 
-Live site: _add the GitHub Pages URL here once Pages is enabled_
-(`https://<your-username>.github.io/aftermind-roster/`)
+Live site: **https://bowergit.github.io/aftermind-roster/**
 
 ---
 
