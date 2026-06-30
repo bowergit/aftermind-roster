@@ -2,8 +2,9 @@
   {
     "name": "Daniel Bower",
     "role": "Magician and host, London",
-    "blurb": "Built a marketing information system on Zoho CRM data using Claude. Performed in a KSI YouTube magic competition.",
-    "website": "",
+    "blurb": "Built a marketing information system on Zoho CRM data using Claude. Magic Circle member; performed in a KSI YouTube magic competition.",
+    "website": "https://www.bowermagic.co.uk/",
+    "socials": {},
     "crm": "Zoho CRM",
     "usesVAs": false,
     "markets": ["Corporate"],
@@ -14,24 +15,33 @@
     "needsReview": false
   },
   {
-    "name": "Daniel C",
-    "role": "Mastermind member",
-    "blurb": "Built a Claude skill for setting up a marketing information system. Hosting dinners at Magic Live.",
-    "website": "",
+    "name": "Daniel C Schaffer",
+    "role": "Corporate mentalist & speaker, Cincinnati",
+    "blurb": "Built a Claude skill for setting up a marketing information system. Hosting dinners at Magic Live. Corporate mentalist and speaker.",
+    "website": "https://schaffermagic.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/danielcschaffer/",
+      "youtube": "https://www.youtube.com/channel/UCKugpeiXD8HHegBHIsDxcfA",
+      "x": "https://twitter.com/danielsconnects"
+    },
     "crm": "Zoho CRM",
     "usesVAs": false,
-    "markets": ["Other"],
+    "markets": ["Corporate"],
     "turnoverBand": "Undisclosed",
     "openToOneToOne": true,
-    "tools": ["Claude"],
+    "tools": ["Claude", "Zoho CRM"],
     "topics": ["Marketing systems", "Mastermind structure", "Event planning", "Nonprofit structuring"],
     "needsReview": false
   },
   {
-    "name": "Durgy",
-    "role": "Wedding MC and magician",
-    "blurb": "Uses Claude to convert wedding run sheets into structured Excel files. Looking to move into corporate MC work.",
-    "website": "",
+    "name": "Durgy Spade",
+    "role": "Wedding MC and magician, Toronto",
+    "blurb": "Uses Claude to convert wedding run sheets into structured Excel files. Toronto's highest-rated wedding MC; looking to move into corporate MC work.",
+    "website": "https://www.durgyspade.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/magicmclive/",
+      "youtube": "https://www.youtube.com/@DurgySpade"
+    },
     "crm": "",
     "usesVAs": false,
     "markets": ["Weddings"],
@@ -43,16 +53,141 @@
   },
   {
     "name": "David Martinez",
-    "role": "Magician, Bay Area",
-    "blurb": "Performed as an official World Cup hospitality magician across four games. Developing a stage persona called The Dazzler.",
-    "website": "",
+    "role": "Magician & mentalist, SF Bay Area",
+    "blurb": "Performed as an official World Cup hospitality magician (SF & Seattle, 2026). Ex-Apple creative. Developing a stage persona called The Dazzler.",
+    "website": "https://www.davidmartinezmagic.com/",
+    "socials": {
+      "facebook": "https://www.facebook.com/davidmartinezmagic/"
+    },
     "crm": "",
     "usesVAs": false,
-    "markets": ["Corporate"],
+    "markets": ["Corporate", "Weddings", "Private parties"],
     "turnoverBand": "Undisclosed",
     "openToOneToOne": true,
     "tools": ["Suno.ai"],
     "topics": ["Large scale corporate gigs", "Persona development"],
     "needsReview": false
+  },
+  {
+    "name": "Adrian Saint",
+    "role": "Mentalist, Orange County CA",
+    "blurb": "OC mentalist (Saint Mysteries Productions). High-energy interactive mind-reading shows; also performs with his twin as the Saint Twins.",
+    "website": "https://ocmentalist.com/",
+    "socials": {},
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate", "Private parties"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Brenden Trojan",
+    "role": "Magician, Columbus OH",
+    "blurb": "Midwest comedy magician with 10M+ views across social platforms; corporate and college shows (Google, Motorola, J&J). Note: name spelled 'Brenden'.",
+    "website": "https://www.brendentrojan.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/brendentrojan/",
+      "facebook": "https://www.facebook.com/BrendenTrojann/",
+      "youtube": "https://www.youtube.com/@brendentrojan"
+    },
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate", "Other"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Dustin Dean",
+    "role": "Mentalist & magician, Syracuse NY",
+    "blurb": "Upstate NY mentalist and 'viral psychic debunker' with a large TikTok following. Appeared on Penn & Teller: Fool Us.",
+    "website": "https://www.dustindeanmentalist.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/dustindeanmentalist/",
+      "youtube": "https://m.youtube.com/c/DustinDeanMentalist",
+      "facebook": "https://m.facebook.com/dustindeanmentalist/"
+    },
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate", "Other"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Greg Dubin",
+    "role": "Close-up magician, Brooklyn NY",
+    "blurb": "Creator and resident performer of 'Magic at the Clock Shop', an intimate close-up parlour in Carroll Gardens, Brooklyn. Consulted on Sleep No More.",
+    "website": "https://www.dubinmagic.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/dubinmagic/",
+      "facebook": "https://www.facebook.com/gsdubin/"
+    },
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate", "Other"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Jack Kelly",
+    "role": "Magician & mentalist, Charlotte NC",
+    "blurb": "Carolina mentalist who fooled Penn & Teller on Fool Us. Performs for brands like Google, Bank of America and Lexus.",
+    "website": "https://www.jackkellylive.com/",
+    "socials": {
+      "instagram": "https://www.instagram.com/jackkellymagic/",
+      "facebook": "https://www.facebook.com/jkellymagic/"
+    },
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Lucas Van Dijk",
+    "role": "(from group list: \"Works at Lucas Roberts\")",
+    "blurb": "Could not confidently find a public website or social profiles by name search — please confirm the correct links.",
+    "website": "",
+    "socials": {},
+    "crm": "",
+    "usesVAs": false,
+    "markets": [],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
+  },
+  {
+    "name": "Matt Szatkowski",
+    "role": "Magician & marketer at Vanishing Inc., NYC",
+    "blurb": "Marketing & social media manager at Vanishing Inc. Magic; NYC magician (Matt Szat Magic) with off-Broadway and Carnegie Hall credits.",
+    "website": "https://www.mattszatmagic.com/",
+    "socials": {
+      "facebook": "https://www.facebook.com/MattSzatMagic/",
+      "linkedin": "https://www.linkedin.com/in/mattszat/"
+    },
+    "crm": "",
+    "usesVAs": false,
+    "markets": ["Corporate", "Other"],
+    "turnoverBand": "Undisclosed",
+    "openToOneToOne": false,
+    "tools": [],
+    "topics": [],
+    "needsReview": true
   }
 ]

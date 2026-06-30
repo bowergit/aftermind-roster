@@ -199,6 +199,8 @@
     border-radius: 5px;
   }
   .tag.empty { color: var(--ink-soft); background: transparent; font-style: italic; }
+  a.tag.link { color: var(--maroon); text-decoration: none; }
+  a.tag.link:hover { background: var(--maroon); color: var(--paper-2); }
 
   .card-actions { margin-top: 12px; display: flex; gap: 8px; }
   .linkbtn {
@@ -344,6 +346,11 @@
         <input type="url" id="f-website" placeholder="https://" />
       </div>
       <div class="field">
+        <label for="f-instagram">Instagram</label>
+        <input type="url" id="f-instagram" placeholder="https://instagram.com/yourhandle" />
+        <div class="hint">Other links (Facebook, YouTube, etc.) are kept as-is when you save.</div>
+      </div>
+      <div class="field">
         <label for="f-crm">CRM (just one)</label>
         <input type="text" id="f-crm" placeholder="e.g. Zoho CRM, HubSpot, 17hats" />
       </div>
@@ -427,6 +434,7 @@ function normalizeMember(m) {
     role: m.role || "",
     blurb: m.blurb || "",
     website: m.website || "",
+    socials: (m.socials && typeof m.socials === "object" && !Array.isArray(m.socials)) ? m.socials : {},
     crm: m.crm || "",
     usesVAs: !!m.usesVAs,
     markets: Array.isArray(m.markets) ? m.markets.slice() : [],
@@ -525,6 +533,33 @@ function tagRow(label, items) {
   return row;
 }
 
+// platform -> link label, in display order
+var SOCIAL_LABELS = { website: "Website", instagram: "Instagram", facebook: "Facebook",
+  youtube: "YouTube", tiktok: "TikTok", x: "X", linkedin: "LinkedIn" };
+
+function linkRow(m) {
+  var row = el("div", "tagrow");
+  row.appendChild(el("span", "rowlabel", "Links"));
+  var links = [];
+  if (m.website) links.push(["website", m.website]);
+  var s = m.socials || {};
+  Object.keys(SOCIAL_LABELS).forEach(function (k) {
+    if (k !== "website" && s[k]) links.push([k, s[k]]);
+  });
+  if (!links.length) {
+    row.appendChild(el("span", "tag empty", "—"));
+    return row;
+  }
+  links.forEach(function (pair) {
+    var a = el("a", "tag link", SOCIAL_LABELS[pair[0]] + " ↗");
+    a.href = pair[1];
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    row.appendChild(a);
+  });
+  return row;
+}
+
 function renderCards() {
   var list = getFiltered();
   var host = $("#cards");
@@ -561,14 +596,9 @@ function renderCards() {
     meta.appendChild(metaItem("VAs:", vaNode));
     var oneNode = el("span", m.openToOneToOne ? "yes" : "", m.openToOneToOne ? "yes" : "no");
     meta.appendChild(metaItem("1:1 ok:", oneNode));
-    if (m.website) {
-      var a = el("a", null, "website ↗");
-      a.href = m.website;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      meta.appendChild(metaItem("Site:", a));
-    }
     card.appendChild(meta);
+
+    card.appendChild(linkRow(m));
 
     card.appendChild(tagRow("Markets", m.markets));
     card.appendChild(tagRow("Tools", m.tools));
@@ -607,6 +637,7 @@ function openEditor(idx) {
   $("#f-role").value = m.role;
   $("#f-blurb").value = m.blurb;
   $("#f-website").value = m.website;
+  $("#f-instagram").value = (m.socials && m.socials.instagram) || "";
   $("#f-crm").value = m.crm;
   $("#f-turnover").value = decodeTurnover(m.turnoverBand);
   $("#f-vas").checked = m.usesVAs;
@@ -643,11 +674,19 @@ function submitForm(ev) {
   $("#f-markets").querySelectorAll("input[type=checkbox]").forEach(function (b) {
     if (b.checked) markets.push(b.value);
   });
+  // preserve existing socials (Facebook, YouTube, etc.); update only Instagram from the form
+  var socials = {};
+  if (editIndex != null && members[editIndex].socials) {
+    for (var k in members[editIndex].socials) socials[k] = members[editIndex].socials[k];
+  }
+  var ig = $("#f-instagram").value.trim();
+  if (ig) socials.instagram = ig; else delete socials.instagram;
   var data = normalizeMember({
     name: name,
     role: $("#f-role").value.trim(),
     blurb: $("#f-blurb").value.trim(),
     website: $("#f-website").value.trim(),
+    socials: socials,
     crm: $("#f-crm").value.trim(),
     usesVAs: $("#f-vas").checked,
     markets: markets,
