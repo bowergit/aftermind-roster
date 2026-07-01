@@ -42,19 +42,21 @@ The roster data lives in a **Supabase** Postgres table called `members`. Each ro
   },
   "turnoverBand": "Undisclosed",  // USD band in $50k intervals, or "Undisclosed"
   "tools": ["Claude", "17hats"],
+  "expertise": ["Corporate MC pricing"], // "ask me about" — things they can help others with
   "needsReview": true             // legacy flag kept on stored rows; the UI no longer uses it
 }
 ```
 
 Cards show an **"incomplete"** badge until a profile has most of its details filled in
-(city, website, Instagram, CRM, market split, tools — turnover is optional). Clicking
-the badge opens that member's edit form, and the **Incomplete only** button filters to
-profiles still missing details.
+(city, website, Instagram, CRM, market split, tools, expertise — turnover is optional).
+Clicking the badge opens that member's edit form, and the **Incomplete only** button
+filters to profiles still missing details.
 
-Markets are one of: **Corporate, Weddings, Private parties, Other**. There are no
-`blurb` or `topics` fields — everyone in the group can speak to anything, and the
-per-member self-data (CRM, turnover, VAs, AI, 1:1, market split, tools) starts blank
-for each person to fill in.
+Markets are one of: **Corporate, Weddings, Private parties, Other**. There's no free-text
+`blurb`; the old `topics` field was replaced by **`expertise`** ("Ask me about") — a
+curated, clickable/searchable list of things a member can genuinely help with. All
+per-member self-data (CRM, turnover, VAs, AI, 1:1, market split, tools, expertise) starts
+blank for each person to fill in.
 
 `index.html` loads all rows on page load and writes edits straight back to the
 database, so **changes are shared — everyone sees them immediately.**
@@ -63,8 +65,8 @@ database, so **changes are shared — everyone sees them immediately.**
 
 No login (proof of concept). Anyone with the page can:
 
-- **Search** by name, city, tool, CRM, market, or website platform.
-- **Filter** with the tool / market / "built on" chips (selecting more than one
+- **Search** by name, city, tool, expertise, CRM, market, or website platform.
+- **Filter** with the "ask about" / tool / market / "built on" chips (selecting more than one
   narrows the list — a member must match *all* selected chips). Chips appear as
   members fill in their tools, market split, and platform — so you can, e.g., click
   **Squarespace** to see everyone on Squarespace, or **Claude** to see every Claude user.

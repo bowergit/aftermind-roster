@@ -441,6 +441,15 @@
         <datalist id="tools-datalist"></datalist>
         <div class="hint">Pick an existing tool or add a new one — new tools join the shared list everyone filters by.</div>
       </div>
+      <div class="field">
+        <label for="f-exp-input">Ask me about</label>
+        <div class="taginput" id="f-exp-wrap">
+          <span id="f-exp-chips"></span>
+          <input type="text" id="f-exp-input" list="exp-datalist" placeholder="e.g. Corporate MC pricing, then Enter" autocomplete="off" />
+        </div>
+        <datalist id="exp-datalist"></datalist>
+        <div class="hint">What you can genuinely help others with — pricing, a niche, a system you've cracked.</div>
+      </div>
       <p class="err" id="formErr" style="display:none"></p>
       <div class="modal-actions">
         <button type="button" class="btn ghost" id="deleteBtn" style="display:none">Delete</button>
@@ -480,6 +489,7 @@ function profileMissing(m) {
   if (!m.crm) missing.push("CRM");
   if (!Object.keys(m.marketSplit).length) missing.push("market split");
   if (!m.tools.length) missing.push("tools");
+  if (!m.expertise.length) missing.push("expertise");
   return missing;
 }
 function isComplete(m) { return profileMissing(m).length <= 1; } // allow one gap
@@ -516,6 +526,7 @@ function normalizeMember(m) {
     marketSplit: split,
     turnoverBand: m.turnoverBand || "Undisclosed",
     tools: Array.isArray(m.tools) ? m.tools.slice() : [],
+    expertise: Array.isArray(m.expertise) ? m.expertise.slice() : [],
     needsReview: !!m.needsReview
   };
 }
@@ -552,11 +563,11 @@ function sbUpdate(m) {
 // ---- Filtering ----------------------------------------------------------
 function memberHaystack(m) {
   return [m.name, m.role, m.city, m.crm, m.turnoverBand, m.websitePlatform]
-    .concat(m.tools, Object.keys(m.marketSplit))
+    .concat(m.tools, m.expertise, Object.keys(m.marketSplit))
     .join(" ").toLowerCase();
 }
 function memberChipValues(m) {
-  return m.tools.concat(Object.keys(m.marketSplit), m.websitePlatform ? [m.websitePlatform] : []);
+  return m.tools.concat(m.expertise, Object.keys(m.marketSplit), m.websitePlatform ? [m.websitePlatform] : []);
 }
 function getFiltered() {
   var q = $("#search").value.trim().toLowerCase();
@@ -584,6 +595,7 @@ function uniqueSorted(arr) {
 
 function renderChips() {
   var groups = [
+    { label: "Ask about", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.expertise; }))) },
     { label: "Tools", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.tools; }))) },
     { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return Object.keys(m.marketSplit); }))) },
     { label: "Built on", values: uniqueSorted(members.map(function (m) { return m.websitePlatform; })) }
@@ -736,6 +748,7 @@ function renderCards() {
     card.appendChild(linkRow(m));
 
     card.appendChild(splitRow(m));
+    card.appendChild(tagRow("Ask me about", m.expertise));
     card.appendChild(tagRow("Tools", m.tools));
 
     var actions = el("div", "card-actions");
@@ -781,6 +794,9 @@ function openEditor(idx) {
   $("#f-tools-input").value = "";
   editTools = m.tools.slice();
   renderToolChips();
+  $("#f-exp-input").value = "";
+  editExpertise = m.expertise.slice();
+  renderExpChips();
   $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
     var v = m.marketSplit[inp.getAttribute("data-market")];
     inp.value = v ? v : "";
@@ -864,6 +880,53 @@ function removeTool(name) {
   editTools = editTools.filter(function (t) { return t !== name; });
   renderToolChips();
 }
+
+// ---- "Ask me about" tag-input (same pattern as tools) -------------------
+var editExpertise = [];
+function allExpertiseNames() {
+  return uniqueSorted([].concat.apply([], members.map(function (m) { return m.expertise; })));
+}
+function refreshExpDatalist() {
+  var dl = $("#exp-datalist");
+  dl.innerHTML = "";
+  var chosen = editExpertise.map(function (t) { return t.toLowerCase(); });
+  allExpertiseNames().forEach(function (t) {
+    if (chosen.indexOf(t.toLowerCase()) === -1) {
+      var o = document.createElement("option");
+      o.value = t;
+      dl.appendChild(o);
+    }
+  });
+}
+function renderExpChips() {
+  var host = $("#f-exp-chips");
+  host.innerHTML = "";
+  editExpertise.forEach(function (t) {
+    var chip = el("span", "tagchip");
+    chip.appendChild(document.createTextNode(t));
+    var x = el("button", null, "×");
+    x.type = "button";
+    x.setAttribute("aria-label", "remove " + t);
+    x.addEventListener("click", function () { removeExpertise(t); });
+    chip.appendChild(x);
+    host.appendChild(chip);
+  });
+  refreshExpDatalist();
+}
+function addExpertise(name) {
+  name = (name || "").replace(/,+$/, "").trim();
+  if (!name) return;
+  var exists = editExpertise.some(function (t) { return t.toLowerCase() === name.toLowerCase(); });
+  if (!exists) {
+    var canon = allExpertiseNames().filter(function (t) { return t.toLowerCase() === name.toLowerCase(); })[0];
+    editExpertise.push(canon || name);
+    renderExpChips();
+  }
+}
+function removeExpertise(name) {
+  editExpertise = editExpertise.filter(function (t) { return t !== name; });
+  renderExpChips();
+}
 function updateSplitTotal() {
   var total = 0;
   $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
@@ -920,6 +983,7 @@ function submitForm(ev) {
     turnoverBand: $("#f-turnover").value,
     openToOneToOne: $("#f-1to1").checked,
     tools: editTools.slice(),
+    expertise: editExpertise.slice(),
     // preserve an existing review flag on edit; new self-adds are trusted
     needsReview: editIndex != null ? members[editIndex].needsReview : false
   });
@@ -1011,6 +1075,15 @@ function wireUp() {
     if (e.inputType === "insertReplacementText") { addTool(ti.value); ti.value = ""; }
   });
   ti.addEventListener("blur", function () { if (ti.value.trim()) { addTool(ti.value); ti.value = ""; } });
+  var ei = $("#f-exp-input");
+  ei.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addExpertise(ei.value); ei.value = ""; }
+    else if (e.key === "Backspace" && !ei.value && editExpertise.length) { removeExpertise(editExpertise[editExpertise.length - 1]); }
+  });
+  ei.addEventListener("input", function (e) {
+    if (e.inputType === "insertReplacementText") { addExpertise(ei.value); ei.value = ""; }
+  });
+  ei.addEventListener("blur", function () { if (ei.value.trim()) { addExpertise(ei.value); ei.value = ""; } });
   $("#memberForm").addEventListener("submit", submitForm);
   $("#overlay").addEventListener("click", function (e) { if (e.target === $("#overlay")) closeEditor(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeEditor(); });
