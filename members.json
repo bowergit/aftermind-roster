@@ -4,6 +4,7 @@
     "role": "Magician & host",
     "city": "London",
     "website": "https://www.bowermagic.co.uk/",
+    "websitePlatform": "Squarespace",
     "socials": {
       "instagram": "https://www.instagram.com/bowermagic/"
     },
@@ -21,6 +22,7 @@
     "role": "Corporate mentalist & speaker",
     "city": "Cincinnati, OH",
     "website": "https://schaffermagic.com/",
+    "websitePlatform": "WordPress",
     "socials": {
       "instagram": "https://www.instagram.com/danielcschaffer/",
       "youtube": "https://www.youtube.com/channel/UCKugpeiXD8HHegBHIsDxcfA",
@@ -40,6 +42,7 @@
     "role": "Wedding MC & magician",
     "city": "Toronto",
     "website": "https://www.durgyspade.com/",
+    "websitePlatform": "WordPress",
     "socials": {
       "instagram": "https://www.instagram.com/magicmclive/",
       "youtube": "https://www.youtube.com/@DurgySpade"
@@ -58,6 +61,7 @@
     "role": "Magician & mentalist",
     "city": "San Francisco Bay Area",
     "website": "https://www.davidmartinezmagic.com/",
+    "websitePlatform": "",
     "socials": {
       "instagram": "https://www.instagram.com/davidmartinezmagic/",
       "facebook": "https://www.facebook.com/davidmartinezmagic/"
@@ -76,6 +80,7 @@
     "role": "Mentalist",
     "city": "Irvine, CA",
     "website": "https://ocmentalist.com/",
+    "websitePlatform": "",
     "socials": {
       "instagram": "https://www.instagram.com/ocmentalist/"
     },
@@ -93,6 +98,7 @@
     "role": "Magician",
     "city": "Columbus, OH",
     "website": "https://www.brendentrojan.com/",
+    "websitePlatform": "Wix",
     "socials": {
       "instagram": "https://www.instagram.com/brendentrojan/",
       "facebook": "https://www.facebook.com/BrendenTrojann/",
@@ -112,6 +118,7 @@
     "role": "Mentalist & magician",
     "city": "Syracuse, NY",
     "website": "https://www.dustindeanmentalist.com/",
+    "websitePlatform": "Squarespace",
     "socials": {
       "instagram": "https://www.instagram.com/dustindeanmentalist/",
       "youtube": "https://m.youtube.com/c/DustinDeanMentalist",
@@ -131,6 +138,7 @@
     "role": "Close-up magician",
     "city": "Brooklyn, NY",
     "website": "https://www.dubinmagic.com/",
+    "websitePlatform": "Squarespace",
     "socials": {
       "instagram": "https://www.instagram.com/dubinmagic/",
       "facebook": "https://www.facebook.com/gsdubin/"
@@ -149,6 +157,7 @@
     "role": "Magician & mentalist",
     "city": "Charlotte, NC",
     "website": "https://www.jackkellylive.com/",
+    "websitePlatform": "Wix",
     "socials": {
       "instagram": "https://www.instagram.com/jackkellymagic/",
       "facebook": "https://www.facebook.com/jkellymagic/"
@@ -167,6 +176,7 @@
     "role": "Magician (performs as Lucas Roberts)",
     "city": "Netherlands",
     "website": "https://www.lucasroberts.nl/",
+    "websitePlatform": "",
     "socials": {
       "instagram": "https://www.instagram.com/lucasrobertsmagic",
       "facebook": "https://www.facebook.com/lucasroberts.magic",
@@ -187,6 +197,7 @@
     "role": "Magician & marketer",
     "city": "New York, NY",
     "website": "https://www.mattszatmagic.com/",
+    "websitePlatform": "Wix",
     "socials": {
       "instagram": "https://www.instagram.com/mattszatmagic/",
       "facebook": "https://www.facebook.com/MattSzatMagic/",

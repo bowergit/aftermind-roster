@@ -204,6 +204,7 @@
   .tag.empty { color: var(--ink-soft); background: transparent; font-style: italic; }
   a.tag.link { color: var(--maroon); text-decoration: none; }
   a.tag.link:hover { background: var(--maroon); color: var(--paper-2); }
+  .tag.plat { background: transparent; color: var(--ink-soft); padding-left: 0; }
 
   .splitwrap { display: inline-block; vertical-align: middle; }
   .splitbar { display: flex; width: 240px; max-width: 60vw; height: 10px; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
@@ -361,6 +362,21 @@
         <input type="url" id="f-website" placeholder="https://" />
       </div>
       <div class="field">
+        <label for="f-platform-select">Website built on</label>
+        <select id="f-platform-select">
+          <option value="">— not set —</option>
+          <option value="Squarespace">Squarespace</option>
+          <option value="Wix">Wix</option>
+          <option value="WordPress">WordPress</option>
+          <option value="Webflow">Webflow</option>
+          <option value="Showit">Showit</option>
+          <option value="Lovable">Lovable</option>
+          <option value="GHL">GHL (GoHighLevel)</option>
+          <option value="__other">Other…</option>
+        </select>
+        <input type="text" id="f-platform-other" placeholder="Type the platform" style="display:none;margin-top:6px" />
+      </div>
+      <div class="field">
         <label for="f-instagram">Instagram</label>
         <input type="url" id="f-instagram" placeholder="https://instagram.com/yourhandle" />
         <div class="hint">Other links (Facebook, YouTube, etc.) are kept as-is when you save.</div>
@@ -479,6 +495,7 @@ function normalizeMember(m) {
     role: m.role || "",
     city: m.city || "",
     website: m.website || "",
+    websitePlatform: m.websitePlatform || "",
     socials: (m.socials && typeof m.socials === "object" && !Array.isArray(m.socials)) ? m.socials : {},
     crm: m.crm || "",
     usesVAs: !!m.usesVAs,
@@ -613,6 +630,9 @@ function linkRow(m) {
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     row.appendChild(a);
+    if (pair[0] === "website" && m.websitePlatform) {
+      row.appendChild(el("span", "tag plat", "on " + m.websitePlatform));
+    }
   });
   return row;
 }
@@ -738,6 +758,7 @@ function openEditor(idx) {
   $("#f-role").value = m.role;
   $("#f-city").value = m.city;
   $("#f-website").value = m.website;
+  setPlatformFields(m.websitePlatform);
   $("#f-instagram").value = (m.socials && m.socials.instagram) || "";
   setCrmFields(m.crm);
   $("#f-turnover").value = decodeTurnover(m.turnoverBand);
@@ -766,6 +787,18 @@ function setCrmFields(crm) {
 function readCrm() {
   var sel = $("#f-crm-select").value;
   if (sel === "__other") return $("#f-crm-other").value.trim();
+  return sel;
+}
+var PLATFORM_OPTIONS = ["Squarespace", "Wix", "WordPress", "Webflow", "Showit", "Lovable", "GHL"];
+function setPlatformFields(p) {
+  var sel = $("#f-platform-select"), other = $("#f-platform-other");
+  if (!p) { sel.value = ""; other.style.display = "none"; other.value = ""; }
+  else if (PLATFORM_OPTIONS.indexOf(p) !== -1) { sel.value = p; other.style.display = "none"; other.value = ""; }
+  else { sel.value = "__other"; other.style.display = "block"; other.value = p; }
+}
+function readPlatform() {
+  var sel = $("#f-platform-select").value;
+  if (sel === "__other") return $("#f-platform-other").value.trim();
   return sel;
 }
 function updateSplitTotal() {
@@ -819,6 +852,7 @@ function submitForm(ev) {
     role: $("#f-role").value.trim(),
     city: $("#f-city").value.trim(),
     website: $("#f-website").value.trim(),
+    websitePlatform: readPlatform(),
     socials: socials,
     crm: readCrm(),
     usesVAs: $("#f-vas").checked,
@@ -899,6 +933,11 @@ function wireUp() {
   $("#cancelBtn").addEventListener("click", closeEditor);
   $("#f-crm-select").addEventListener("change", function () {
     var other = $("#f-crm-other");
+    if (this.value === "__other") { other.style.display = "block"; other.focus(); }
+    else { other.style.display = "none"; other.value = ""; }
+  });
+  $("#f-platform-select").addEventListener("change", function () {
+    var other = $("#f-platform-other");
     if (this.value === "__other") { other.style.display = "block"; other.focus(); }
     else { other.style.display = "none"; other.value = ""; }
   });

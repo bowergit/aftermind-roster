@@ -29,6 +29,7 @@ The roster data lives in a **Supabase** Postgres table called `members`. Each ro
   "role": "Magician & host",
   "city": "London",
   "website": "https://...",
+  "websitePlatform": "Squarespace", // Squarespace/Wix/WordPress/Webflow/Showit/Lovable/GHL or free text
   "socials": {                    // any of: instagram, facebook, youtube, tiktok, x, linkedin
     "instagram": "https://instagram.com/..."
   },
