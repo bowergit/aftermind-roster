@@ -217,6 +217,13 @@
   .splitinputs label { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: "Space Mono", monospace; font-size: 12px; color: var(--ink-soft); text-transform: none; letter-spacing: 0; margin: 0; }
   .splitinputs input { width: 72px; }
 
+  .taginput { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); }
+  .taginput:focus-within { outline: 2px solid var(--maroon); outline-offset: 1px; }
+  .taginput input { border: none; outline: none; background: transparent; flex: 1 1 120px; min-width: 120px; font-family: inherit; font-size: 14px; padding: 4px 2px; }
+  .tagchip { display: inline-flex; align-items: center; gap: 6px; font-family: "Space Mono", monospace; font-size: 12px; background: var(--tag-bg); color: var(--ink); padding: 3px 6px 3px 9px; border-radius: 5px; }
+  .tagchip button { border: none; background: none; color: var(--ink-soft); cursor: pointer; font-size: 14px; line-height: 1; padding: 0; }
+  .tagchip button:hover { color: var(--maroon); }
+
   .card-actions { margin-top: 12px; display: flex; gap: 8px; }
   .linkbtn {
     font-family: "Space Mono", monospace;
@@ -426,8 +433,13 @@
         </div>
       </div>
       <div class="field">
-        <label for="f-tools">Tools (comma separated)</label>
-        <input type="text" id="f-tools" placeholder="Claude, Suno.ai, Notion" />
+        <label for="f-tools-input">Tools</label>
+        <div class="taginput" id="f-tools-wrap">
+          <span id="f-tools-chips"></span>
+          <input type="text" id="f-tools-input" list="tools-datalist" placeholder="Type a tool, then Enter" autocomplete="off" />
+        </div>
+        <datalist id="tools-datalist"></datalist>
+        <div class="hint">Pick an existing tool or add a new one — new tools join the shared list everyone filters by.</div>
       </div>
       <p class="err" id="formErr" style="display:none"></p>
       <div class="modal-actions">
@@ -539,12 +551,12 @@ function sbUpdate(m) {
 
 // ---- Filtering ----------------------------------------------------------
 function memberHaystack(m) {
-  return [m.name, m.role, m.city, m.crm, m.turnoverBand]
+  return [m.name, m.role, m.city, m.crm, m.turnoverBand, m.websitePlatform]
     .concat(m.tools, Object.keys(m.marketSplit))
     .join(" ").toLowerCase();
 }
 function memberChipValues(m) {
-  return m.tools.concat(Object.keys(m.marketSplit));
+  return m.tools.concat(Object.keys(m.marketSplit), m.websitePlatform ? [m.websitePlatform] : []);
 }
 function getFiltered() {
   var q = $("#search").value.trim().toLowerCase();
@@ -573,7 +585,8 @@ function uniqueSorted(arr) {
 function renderChips() {
   var groups = [
     { label: "Tools", values: uniqueSorted([].concat.apply([], members.map(function (m) { return m.tools; }))) },
-    { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return Object.keys(m.marketSplit); }))) }
+    { label: "Markets", values: uniqueSorted([].concat.apply([], members.map(function (m) { return Object.keys(m.marketSplit); }))) },
+    { label: "Built on", values: uniqueSorted(members.map(function (m) { return m.websitePlatform; })) }
   ];
   var host = $("#chipgroups");
   host.innerHTML = "";
@@ -765,7 +778,9 @@ function openEditor(idx) {
   $("#f-vas").checked = m.usesVAs;
   $("#f-ai").checked = m.aiPowerhouse;
   $("#f-1to1").checked = m.openToOneToOne;
-  $("#f-tools").value = m.tools.join(", ");
+  $("#f-tools-input").value = "";
+  editTools = m.tools.slice();
+  renderToolChips();
   $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
     var v = m.marketSplit[inp.getAttribute("data-market")];
     inp.value = v ? v : "";
@@ -801,6 +816,54 @@ function readPlatform() {
   if (sel === "__other") return $("#f-platform-other").value.trim();
   return sel;
 }
+
+// ---- Tools tag-input with autocomplete ----------------------------------
+var editTools = [];
+function allToolNames() {
+  return uniqueSorted([].concat.apply([], members.map(function (m) { return m.tools; })));
+}
+function refreshToolDatalist() {
+  var dl = $("#tools-datalist");
+  dl.innerHTML = "";
+  var chosen = editTools.map(function (t) { return t.toLowerCase(); });
+  allToolNames().forEach(function (t) {
+    if (chosen.indexOf(t.toLowerCase()) === -1) {
+      var o = document.createElement("option");
+      o.value = t;
+      dl.appendChild(o);
+    }
+  });
+}
+function renderToolChips() {
+  var host = $("#f-tools-chips");
+  host.innerHTML = "";
+  editTools.forEach(function (t) {
+    var chip = el("span", "tagchip");
+    chip.appendChild(document.createTextNode(t));
+    var x = el("button", null, "×");
+    x.type = "button";
+    x.setAttribute("aria-label", "remove " + t);
+    x.addEventListener("click", function () { removeTool(t); });
+    chip.appendChild(x);
+    host.appendChild(chip);
+  });
+  refreshToolDatalist();
+}
+function addTool(name) {
+  name = (name || "").replace(/,+$/, "").trim();
+  if (!name) return;
+  var exists = editTools.some(function (t) { return t.toLowerCase() === name.toLowerCase(); });
+  if (!exists) {
+    // reuse an existing tool's exact casing so "claude" and "Claude" don't split the list
+    var canon = allToolNames().filter(function (t) { return t.toLowerCase() === name.toLowerCase(); })[0];
+    editTools.push(canon || name);
+    renderToolChips();
+  }
+}
+function removeTool(name) {
+  editTools = editTools.filter(function (t) { return t !== name; });
+  renderToolChips();
+}
 function updateSplitTotal() {
   var total = 0;
   $("#f-split").querySelectorAll("input[data-market]").forEach(function (inp) {
@@ -821,10 +884,6 @@ function decodeTurnover(v) {
   return "Undisclosed";
 }
 function closeEditor() { $("#overlay").classList.remove("open"); editIndex = null; }
-
-function splitList(s) {
-  return s.split(",").map(function (x) { return x.trim(); }).filter(function (x) { return x.length; });
-}
 
 function submitForm(ev) {
   ev.preventDefault();
@@ -860,7 +919,7 @@ function submitForm(ev) {
     marketSplit: marketSplit,
     turnoverBand: $("#f-turnover").value,
     openToOneToOne: $("#f-1to1").checked,
-    tools: splitList($("#f-tools").value),
+    tools: editTools.slice(),
     // preserve an existing review flag on edit; new self-adds are trusted
     needsReview: editIndex != null ? members[editIndex].needsReview : false
   });
@@ -942,6 +1001,16 @@ function wireUp() {
     else { other.style.display = "none"; other.value = ""; }
   });
   $("#f-split").addEventListener("input", updateSplitTotal);
+  var ti = $("#f-tools-input");
+  ti.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTool(ti.value); ti.value = ""; }
+    else if (e.key === "Backspace" && !ti.value && editTools.length) { removeTool(editTools[editTools.length - 1]); }
+  });
+  ti.addEventListener("input", function (e) {
+    // picking an option from the datalist replaces the whole value — add it immediately
+    if (e.inputType === "insertReplacementText") { addTool(ti.value); ti.value = ""; }
+  });
+  ti.addEventListener("blur", function () { if (ti.value.trim()) { addTool(ti.value); ti.value = ""; } });
   $("#memberForm").addEventListener("submit", submitForm);
   $("#overlay").addEventListener("click", function (e) { if (e.target === $("#overlay")) closeEditor(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeEditor(); });

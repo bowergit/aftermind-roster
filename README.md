@@ -63,10 +63,13 @@ database, so **changes are shared — everyone sees them immediately.**
 
 No login (proof of concept). Anyone with the page can:
 
-- **Search** by name, city, tool, CRM, or market.
-- **Filter** with the tool / market chips (selecting more than one narrows the
-  list — a member must match *all* selected chips). Chips appear as members fill in
-  their tools and market split.
+- **Search** by name, city, tool, CRM, market, or website platform.
+- **Filter** with the tool / market / "built on" chips (selecting more than one
+  narrows the list — a member must match *all* selected chips). Chips appear as
+  members fill in their tools, market split, and platform — so you can, e.g., click
+  **Squarespace** to see everyone on Squarespace, or **Claude** to see every Claude user.
+- **Tools** use a shared autocomplete: start typing in the edit form and pick an
+  existing tool, or add a new one — new tools join the shared list everyone filters by.
 - **⚠ Needs review** button: show only profiles that were auto-researched and still
   need a human to confirm them.
 - **Edit** any member, or **Add yourself** via the questionnaire. Saves persist to the
